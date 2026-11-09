@@ -3,6 +3,7 @@ import { BiomarkerDefinition, ExamMeasurement, UserProfile, WearableDailyReading
 export const INITIAL_USER: UserProfile = {
   id: 'usr-dan-2026',
   name: 'Daniel Vaz',
+  email: 'daniel.vaz@gmail.com',
   age: 32,
   biologicalSex: 'Masculino',
   chronicConditions: ['Histórico familiar de dislipidemia e arritmia'],

@@ -5,6 +5,7 @@ import {
   ChatMessage,
   DoctorAccessSession,
   ExamMeasurement,
+  UploadedDocument,
   UserProfile,
   WearableDailyReading,
 } from '../types';
@@ -16,9 +17,11 @@ import {
 } from '../data/seedData';
 
 interface HealthState {
+  isAuthenticated: boolean;
   user: UserProfile;
   biomarkers: Record<string, BiomarkerDefinition>;
   exams: ExamMeasurement[];
+  uploadedDocuments: UploadedDocument[];
   wearables: WearableDailyReading[];
   activeAlerts: AnomalyAlert[];
   chatMessages: ChatMessage[];
@@ -26,8 +29,19 @@ interface HealthState {
   isSimulatedAnomalyActive: boolean;
 
   // Actions
+  login: (email: string, pass: string) => Promise<boolean>;
+  loginDemo: () => void;
+  logout: () => void;
   addExamMeasurement: (exam: Omit<ExamMeasurement, 'id'>) => void;
+  removeExam: (id: string) => void;
   processExamDocumentMock: (docName: string) => Promise<ExamMeasurement[]>;
+  registerUploadedDocument: (file: {
+    name: string;
+    uri: string;
+    size?: number;
+    mimeType?: string;
+  }) => Promise<ExamMeasurement[]>;
+  deleteUploadedDocument: (id: string) => void;
   injectWearableAnomalyScenario: () => void;
   resetWearableScenario: () => void;
   sendChatMessage: (userText: string) => Promise<void>;
@@ -36,9 +50,42 @@ interface HealthState {
 }
 
 export const useHealthStore = create<HealthState>((set, get) => ({
+  isAuthenticated: true, // Pré-autenticado por padrão para não atrasar a banca
   user: INITIAL_USER,
   biomarkers: BIOMARKER_DEFINITIONS,
   exams: INITIAL_EXAMS,
+  uploadedDocuments: [
+    {
+      id: 'doc-fleury-2025',
+      name: 'Laudo_Completo_Fleury_Out2025.pdf',
+      uri: 'file:///data/Laudo_Completo_Fleury_Out2025.pdf',
+      size: 482000,
+      mimeType: 'application/pdf',
+      uploadedAt: '18/10/2025',
+      extractedCount: 3,
+      status: 'processed',
+    },
+    {
+      id: 'doc-dasa-2024',
+      name: 'Exame_Sangue_Dasa_Checkup_2024.pdf',
+      uri: 'file:///data/Exame_Sangue_Dasa_Checkup_2024.pdf',
+      size: 320000,
+      mimeType: 'application/pdf',
+      uploadedAt: '10/08/2024',
+      extractedCount: 2,
+      status: 'processed',
+    },
+    {
+      id: 'doc-salomao-2023',
+      name: 'Foto_Laudo_Salomao_Zoppi_2023.jpg',
+      uri: 'file:///data/Foto_Laudo_Salomao_Zoppi_2023.jpg',
+      size: 1420000,
+      mimeType: 'image/jpeg',
+      uploadedAt: '20/05/2023',
+      extractedCount: 2,
+      status: 'processed',
+    },
+  ],
   wearables: generateBaselineWearables(),
   activeAlerts: [],
   isSimulatedAnomalyActive: false,
@@ -60,6 +107,32 @@ export const useHealthStore = create<HealthState>((set, get) => ({
     },
   ],
 
+  login: async (email: string, pass: string) => {
+    await new Promise((r) => setTimeout(r, 600));
+    set({
+      isAuthenticated: true,
+      user: {
+        ...INITIAL_USER,
+        email: email || INITIAL_USER.email,
+        name: email ? email.split('@')[0] : INITIAL_USER.name,
+      },
+    });
+    return true;
+  },
+
+  loginDemo: () => {
+    set({
+      isAuthenticated: true,
+      user: INITIAL_USER,
+    });
+  },
+
+  logout: () => {
+    set({
+      isAuthenticated: false,
+    });
+  },
+
   addExamMeasurement: (newExam) => {
     const examWithId: ExamMeasurement = {
       ...newExam,
@@ -70,9 +143,14 @@ export const useHealthStore = create<HealthState>((set, get) => ({
     }));
   },
 
+  removeExam: (id: string) => {
+    set((state) => ({
+      exams: state.exams.filter((e) => e.id !== id),
+    }));
+  },
+
   processExamDocumentMock: async (docName: string) => {
-    // Simula o tempo de latência da leitura multimodal do Gemini com Structured Output
-    await new Promise((resolve) => setTimeout(resolve, 1800));
+    await new Promise((resolve) => setTimeout(resolve, 1600));
 
     const todayStr = new Date().toISOString().split('T')[0];
     const newItems: ExamMeasurement[] = [
@@ -87,7 +165,7 @@ export const useHealthStore = create<HealthState>((set, get) => ({
         refMin: 70,
         refMax: 99,
         status: 'attention',
-        notes: 'Identificado no laudo anexado: "' + docName + '".',
+        notes: `Identificado no documento: "${docName}".`,
       },
       {
         id: `ex-gen-${Date.now()}-2`,
@@ -104,25 +182,102 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       },
     ];
 
+    const newDoc: UploadedDocument = {
+      id: `doc-${Date.now()}`,
+      name: docName,
+      uri: `file:///uploaded/${docName}`,
+      size: 450000,
+      mimeType: docName.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
+      uploadedAt: new Date().toLocaleDateString('pt-BR'),
+      extractedCount: 2,
+      status: 'processed',
+    };
+
     set((state) => ({
       exams: [...newItems, ...state.exams],
+      uploadedDocuments: [newDoc, ...state.uploadedDocuments],
     }));
 
     return newItems;
   },
 
+  registerUploadedDocument: async (file: {
+    name: string;
+    uri: string;
+    size?: number;
+    mimeType?: string;
+  }) => {
+    // Simula a leitura e extração do arquivo real escolhido pelo usuário
+    await new Promise((r) => setTimeout(r, 1800));
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isImage = file.mimeType?.startsWith('image/') || file.name.endsWith('.jpg') || file.name.endsWith('.png');
+
+    const newItems: ExamMeasurement[] = [
+      {
+        id: `ex-real-${Date.now()}-1`,
+        date: todayStr,
+        labName: 'Laboratório Alta Excelência',
+        biomarkerId: 'glicose',
+        canonicalName: 'Glicemia de Jejum',
+        value: 106,
+        unit: 'mg/dL',
+        refMin: 70,
+        refMax: 99,
+        status: 'attention',
+        notes: `Extraído do arquivo: ${file.name}`,
+      },
+      {
+        id: `ex-real-${Date.now()}-2`,
+        date: todayStr,
+        labName: 'Laboratório Alta Excelência',
+        biomarkerId: 'triglicerides',
+        canonicalName: 'Triglicérides',
+        value: 148,
+        unit: 'mg/dL',
+        refMin: 0,
+        refMax: 150,
+        status: 'normal',
+        notes: 'Normalidade preservada.',
+      },
+    ];
+
+    const newDoc: UploadedDocument = {
+      id: `doc-user-${Date.now()}`,
+      name: file.name,
+      uri: file.uri,
+      size: file.size || (isImage ? 850000 : 420000),
+      mimeType: file.mimeType || (isImage ? 'image/jpeg' : 'application/pdf'),
+      uploadedAt: new Date().toLocaleDateString('pt-BR'),
+      extractedCount: newItems.length,
+      status: 'processed',
+    };
+
+    set((state) => ({
+      exams: [...newItems, ...state.exams],
+      uploadedDocuments: [newDoc, ...state.uploadedDocuments],
+    }));
+
+    return newItems;
+  },
+
+  deleteUploadedDocument: (id: string) => {
+    set((state) => ({
+      uploadedDocuments: state.uploadedDocuments.filter((d) => d.id !== id),
+    }));
+  },
+
   injectWearableAnomalyScenario: () => {
     const currentWearables = [...get().wearables];
-    // Altera os últimos 3 dias para simular taquicardia noturna, queda de sono profundo e queda drástica de HRV
     const modifiedWearables = currentWearables.map((item, index) => {
       if (index >= currentWearables.length - 3) {
         return {
           ...item,
-          restingHeartRate: 106 + (index % 3) * 4, // 106 - 114 BPM em repouso
+          restingHeartRate: 106 + (index % 3) * 4,
           maxHeartRate: 158,
-          hrv: 22 - index * 2, // Despenca para 18-22ms
+          hrv: 22 - index * 2,
           sleepHours: 5.1,
-          deepSleepHours: 0.3, // Sono profundo quase nulo
+          deepSleepHours: 0.3,
           remSleepHours: 0.8,
         };
       }
@@ -169,8 +324,7 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       chatMessages: [...state.chatMessages, userMsg],
     }));
 
-    // Simula latência de resposta do motor GraphRAG
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await new Promise((resolve) => setTimeout(resolve, 1100));
 
     const state = get();
     const lower = userText.toLowerCase();

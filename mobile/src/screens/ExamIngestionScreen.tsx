@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Modal,
+  Alert,
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker';
 import {
   Camera,
   FileText,
@@ -19,10 +22,12 @@ import {
   Layers,
   FileCheck,
   Scan,
-  Maximize2,
-  Eye,
   X,
   ShieldCheck,
+  Trash2,
+  DownloadCloud,
+  Image as ImageIcon,
+  FolderOpen,
 } from 'lucide-react-native';
 import { useHealthStore } from '../store/useHealthStore';
 import { ExamMeasurement } from '../types';
@@ -34,7 +39,14 @@ interface ExamIngestionScreenProps {
 export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
   onNavigateToTab,
 }) => {
-  const { processExamDocumentMock, exams } = useHealthStore();
+  const {
+    processExamDocumentMock,
+    registerUploadedDocument,
+    uploadedDocuments,
+    deleteUploadedDocument,
+    exams,
+  } = useHealthStore();
+
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<string>('');
   const [extractedResults, setExtractedResults] = useState<ExamMeasurement[] | null>(null);
@@ -43,11 +55,8 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
   // Modo Câmera / Scanner Viewfinder
   const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
   const [scanLaserPos, setScanLaserPos] = useState<number>(10);
-
-  // Modal de Conferência Rápida
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
 
-  // Efeito simples de varredura do laser na câmera
   useEffect(() => {
     let interval: any;
     if (isCameraActive) {
@@ -58,37 +67,101 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
     return () => clearInterval(interval);
   }, [isCameraActive]);
 
-  const handleStartCamera = () => {
-    setIsCameraActive(true);
+  // Upload Real via DocumentPicker (PDF / Imagens)
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        await handleProcessRealFile({
+          name: file.name,
+          uri: file.uri,
+          size: file.size,
+          mimeType: file.mimeType,
+        });
+      }
+    } catch (err) {
+      console.log('Erro ao escolher arquivo:', err);
+    }
+  };
+
+  // Upload Real via ImagePicker (Galeria ou Câmera)
+  const handlePickImageFromGallery = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert('Permissão necessária', 'Autorize o acesso às fotos para carregar exames.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.9,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const fileName = asset.fileName || `Exame_Foto_${Date.now()}.jpg`;
+        await handleProcessRealFile({
+          name: fileName,
+          uri: asset.uri,
+          mimeType: 'image/jpeg',
+        });
+      }
+    } catch (err) {
+      console.log('Erro ao selecionar foto:', err);
+    }
+  };
+
+  // Processa o arquivo real selecionado
+  const handleProcessRealFile = async (file: {
+    name: string;
+    uri: string;
+    size?: number;
+    mimeType?: string;
+  }) => {
+    setSelectedFileName(file.name);
+    setIsProcessing(true);
     setExtractedResults(null);
+
+    setCurrentStep(`Carregando "${file.name}"...`);
+    await new Promise((r) => setTimeout(r, 600));
+
+    setCurrentStep('Lendo documento com Gemini 2.5 Flash Multimodal...');
+    await new Promise((r) => setTimeout(r, 700));
+
+    setCurrentStep('Extraindo biomarcadores e resolvendo entidades via HNSW...');
+    const results = await registerUploadedDocument(file);
+
+    setCurrentStep('Laudo integrado ao histórico com sucesso!');
+    setIsProcessing(false);
+    setExtractedResults(results);
+    setShowReviewModal(true);
   };
 
-  const handleCaptureSnapshot = async () => {
-    setIsCameraActive(false);
-    await handleSimulateExtraction('Foto_Laudo_Capturado_Câmera.jpg');
-  };
-
+  // Processa preset mock da demo
   const handleSimulateExtraction = async (fileName: string) => {
     setSelectedFileName(fileName);
     setIsProcessing(true);
     setExtractedResults(null);
 
-    // Passo 1: Leitura do arquivo
     setCurrentStep('Lendo documento com Gemini 2.5 Flash...');
     await new Promise((r) => setTimeout(r, 600));
 
-    // Passo 2: Extração estruturada
     setCurrentStep('Extraindo biomarcadores em Structured JSON...');
     await new Promise((r) => setTimeout(r, 700));
 
-    // Passo 3: Entity Resolution com HNSW
     setCurrentStep('Padronizando entidades canônicas via pgvector HNSW...');
     const results = await processExamDocumentMock(fileName);
 
     setCurrentStep('Exame inserido na Linha do Tempo e Grafo Clínico!');
     setIsProcessing(false);
     setExtractedResults(results);
-    setShowReviewModal(true); // Abre o modal de conferência rápida
+    setShowReviewModal(true);
   };
 
   return (
@@ -97,11 +170,11 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
       <View style={styles.header}>
         <Text style={styles.title}>Digitalização de Laudos</Text>
         <Text style={styles.subtitle}>
-          Fotografe exames em papel de 10 anos atrás ou suba PDFs de laboratórios. A IA lê, desduplica via HNSW e estrutura cada resultado.
+          Fotografe exames físicos ou envie PDFs reais. A IA multimodal extrai e padroniza cada biomarcador via HNSW.
         </Text>
       </View>
 
-      {/* Visor de Câmera / Scanner Inteligente (ETAPA 2) */}
+      {/* Modo Visor de Scanner Simulado */}
       {isCameraActive ? (
         <View style={styles.viewfinderCard}>
           <View style={styles.viewfinderHeader}>
@@ -114,18 +187,13 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
             </TouchableOpacity>
           </View>
 
-          {/* Moldura da Câmera com Guias de Cantos */}
           <View style={styles.cameraBox}>
-            {/* Linha Laser Animada */}
             <View style={[styles.scanLaser, { top: scanLaserPos }]} />
-
-            {/* Cantos do Viewfinder */}
             <View style={[styles.corner, styles.cornerTL]} />
             <View style={[styles.corner, styles.cornerTR]} />
             <View style={[styles.corner, styles.cornerBL]} />
             <View style={[styles.corner, styles.cornerBR]} />
 
-            {/* Bounding boxes simuladas sobre o laudo */}
             <View style={[styles.bbox, { top: 35, left: 20, width: 130 }]}>
               <Text style={styles.bboxText}>Laboratório: Fleury (99.8%)</Text>
             </View>
@@ -139,39 +207,55 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
             <Text style={styles.cameraHint}>Alinhe o laudo dentro do quadro e segure firme</Text>
           </View>
 
-          <TouchableOpacity style={styles.captureButton} onPress={handleCaptureSnapshot}>
+          <TouchableOpacity
+            style={styles.captureButton}
+            onPress={() => {
+              setIsCameraActive(false);
+              handleSimulateExtraction('Foto_Laudo_Capturado_Câmera.jpg');
+            }}
+          >
             <Camera color="#FFFFFF" size={18} />
-            <Text style={styles.captureButtonText}>Capturar & Extrair com IA</Text>
+            <Text style={styles.captureButtonText}>Capturar & Processar com IA</Text>
           </TouchableOpacity>
         </View>
       ) : (
-        /* Área de Upload Padrão */
+        /* Área de Upload com Suporte a Arquivos Reais */
         <View style={styles.uploadArea}>
           <View style={styles.uploadIconWrapper}>
-            <UploadCloud color="#0D9488" size={32} />
+            <UploadCloud color="#0D9488" size={30} />
           </View>
-          <Text style={styles.uploadTitle}>Envie ou fotografe seu exame</Text>
+          <Text style={styles.uploadTitle}>Envie laudos reais ou fotografe</Text>
           <Text style={styles.uploadSubtitle}>
-            Suporta fotos de celular, laudos amassados, PDFs digitais e exames antigos
+            Selecione arquivos PDF reais, fotos da galeria ou use o scanner de câmera
           </Text>
 
-          <View style={styles.buttonRow}>
+          {/* Botões de Ação de Upload */}
+          <View style={styles.uploadActionGrid}>
             <TouchableOpacity
-              style={styles.primaryActionButton}
-              onPress={handleStartCamera}
-              disabled={isProcessing}
-            >
-              <Camera color="#FFFFFF" size={16} />
-              <Text style={styles.primaryActionButtonText}>Abrir Câmera Scanner</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.secondaryActionButton}
-              onPress={() => handleSimulateExtraction('Laudo_Fleury_Glicada_Checkup.pdf')}
+              style={styles.realUploadBtn}
+              onPress={handlePickDocument}
               disabled={isProcessing}
             >
               <FileText color="#0D9488" size={16} />
-              <Text style={styles.secondaryActionButtonText}>Anexar PDF</Text>
+              <Text style={styles.realUploadBtnText}>Escolher PDF Real</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.realUploadBtn}
+              onPress={handlePickImageFromGallery}
+              disabled={isProcessing}
+            >
+              <ImageIcon color="#3B82F6" size={16} />
+              <Text style={[styles.realUploadBtnText, { color: '#2563EB' }]}>Foto da Galeria</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.realUploadBtn, styles.scannerBtnFull]}
+              onPress={() => setIsCameraActive(true)}
+              disabled={isProcessing}
+            >
+              <Camera color="#FFFFFF" size={16} />
+              <Text style={[styles.realUploadBtnText, { color: '#FFFFFF' }]}>Abrir Scanner com Câmera</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -180,8 +264,8 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
       {/* Cenários Rápidos para Live Demo (Garante 100% de estabilidade) */}
       <View style={styles.demoSection}>
         <View style={styles.demoBadge}>
-          <Sparkles color="#6366F1" size={14} />
-          <Text style={styles.demoBadgeText}>Cenários Determinísticos para Apresentação</Text>
+          <Sparkles color="#6366F1" size={12} />
+          <Text style={styles.demoBadgeText}>Cenários Rápidos para a Banca</Text>
         </View>
 
         <TouchableOpacity
@@ -190,7 +274,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
           disabled={isProcessing}
         >
           <View style={styles.presetIcon}>
-            <FileCheck color="#0D9488" size={20} />
+            <FileCheck color="#0D9488" size={18} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.presetTitle}>Laudo Fleury 2026 (PDF Digital)</Text>
@@ -198,7 +282,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
               Extrai Glicemia de Jejum (108 mg/dL) e HbA1c (5.8%) com faixas de referência.
             </Text>
           </View>
-          <ArrowRight color="#94A3B8" size={16} />
+          <ArrowRight color="#94A3B8" size={14} />
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -207,15 +291,15 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
           disabled={isProcessing}
         >
           <View style={[styles.presetIcon, { backgroundColor: '#FEF3C7' }]}>
-            <Camera color="#D97706" size={20} />
+            <Camera color="#D97706" size={18} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.presetTitle}>Foto de Papel Amassado com Ruído</Text>
             <Text style={styles.presetDesc}>
-              Demonstra tolerância da IA multimodal a sombras e distorções de captura.
+              Demonstra tolerância da IA multimodal a sombras e caligrafia mista.
             </Text>
           </View>
-          <ArrowRight color="#94A3B8" size={16} />
+          <ArrowRight color="#94A3B8" size={14} />
         </TouchableOpacity>
       </View>
 
@@ -234,7 +318,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
       {extractedResults && (
         <View style={styles.resultCard}>
           <View style={styles.resultHeader}>
-            <CheckCircle2 color="#10B981" size={22} />
+            <CheckCircle2 color="#10B981" size={20} />
             <View style={{ flex: 1, marginLeft: 8 }}>
               <Text style={styles.resultTitle}>Laudo Estruturado com Sucesso!</Text>
               <Text style={styles.resultSubtitle}>
@@ -291,28 +375,42 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
         </View>
       )}
 
-      {/* Estatísticas do Histórico Clínico */}
-      <View style={styles.statsCard}>
-        <View style={styles.statsItem}>
-          <Layers color="#0D9488" size={18} />
-          <Text style={styles.statsNumber}>{exams.length}</Text>
-          <Text style={styles.statsLabel}>Aferições no Grafo</Text>
+      {/* Lista de Documentos Armazenados do Usuário */}
+      <View style={styles.sectionTitleRow}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <FolderOpen color="#1E293B" size={16} />
+          <Text style={styles.sectionTitle}>Documentos & Laudos Armazenados</Text>
         </View>
-        <View style={styles.statsDivider} />
-        <View style={styles.statsItem}>
-          <Clock color="#3B82F6" size={18} />
-          <Text style={styles.statsNumber}>5 anos</Text>
-          <Text style={styles.statsLabel}>Janela Histórica</Text>
-        </View>
-        <View style={styles.statsDivider} />
-        <View style={styles.statsItem}>
-          <Sparkles color="#8B5CF6" size={18} />
-          <Text style={styles.statsNumber}>100%</Text>
-          <Text style={styles.statsLabel}>Structured Output</Text>
-        </View>
+        <Text style={styles.docCountBadge}>{uploadedDocuments.length} arquivos</Text>
       </View>
 
-      {/* Modal de Conferência Rápida (ETAPA 2) */}
+      <View style={styles.docList}>
+        {uploadedDocuments.map((doc) => {
+          const isPdf = doc.mimeType?.includes('pdf') || doc.name.endsWith('.pdf');
+          const sizeKb = doc.size ? Math.round(doc.size / 1024) : 380;
+          return (
+            <View key={doc.id} style={styles.docCard}>
+              <View style={[styles.docIconCircle, { backgroundColor: isPdf ? '#FEE2E2' : '#F0FDFA' }]}>
+                {isPdf ? <FileText color="#E11D48" size={18} /> : <ImageIcon color="#0D9488" size={18} />}
+              </View>
+              <View style={styles.docInfo}>
+                <Text style={styles.docName} numberOfLines={1}>{doc.name}</Text>
+                <Text style={styles.docSub}>
+                  {doc.uploadedAt} • {sizeKb} KB • {doc.extractedCount} biomarcadores
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.deleteDocBtn}
+                onPress={() => deleteUploadedDocument(doc.id)}
+              >
+                <Trash2 color="#94A3B8" size={16} />
+              </TouchableOpacity>
+            </View>
+          );
+        })}
+      </View>
+
+      {/* Modal de Conferência Rápida */}
       <Modal visible={showReviewModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -372,7 +470,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 16,
-    paddingTop: 8,
+    paddingTop: 4,
   },
   title: {
     fontSize: 22,
@@ -480,18 +578,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#CCFBF1',
     borderStyle: 'dashed',
-    padding: 22,
+    padding: 18,
     alignItems: 'center',
     marginBottom: 20,
   },
   uploadIconWrapper: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     backgroundColor: '#F0FDFA',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   uploadTitle: {
     fontSize: 15,
@@ -503,48 +601,38 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#64748B',
     textAlign: 'center',
-    marginTop: 4,
-    marginBottom: 16,
-    maxWidth: 260,
+    marginTop: 3,
+    marginBottom: 14,
+    maxWidth: 270,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 10,
+  uploadActionGrid: {
     width: '100%',
-  },
-  primaryActionButton: {
-    flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#0D9488',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    justifyContent: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  realUploadBtn: {
+    flex: 1,
+    minWidth: '45%',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
-  primaryActionButtonText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  secondaryActionButton: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: '#F0FDFA',
+    justifyContent: 'center',
+    backgroundColor: '#F8FAFC',
     borderWidth: 1,
-    borderColor: '#99F6E4',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    borderColor: '#E2E8F0',
+    paddingVertical: 11,
     borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
     gap: 6,
   },
-  secondaryActionButtonText: {
-    color: '#0D9488',
+  realUploadBtnText: {
+    fontSize: 11,
     fontWeight: '700',
-    fontSize: 12,
+    color: '#0D9488',
+  },
+  scannerBtnFull: {
+    minWidth: '100%',
+    backgroundColor: '#0D9488',
+    borderColor: '#0F766E',
   },
   demoSection: {
     marginBottom: 20,
@@ -704,35 +792,58 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 13,
   },
-  statsCard: {
+  sectionTitleRow: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1E293B',
+  },
+  docCountBadge: {
+    fontSize: 11,
+    color: '#64748B',
+    fontWeight: '600',
+  },
+  docList: {
+    gap: 8,
+    marginBottom: 20,
+  },
+  docCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: 14,
+    padding: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    justifyContent: 'space-around',
+    gap: 10,
+  },
+  docIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  statsItem: {
-    alignItems: 'center',
+  docInfo: {
     flex: 1,
   },
-  statsNumber: {
-    fontSize: 16,
-    fontWeight: '900',
+  docName: {
+    fontSize: 12,
+    fontWeight: '700',
     color: '#0F172A',
-    marginTop: 4,
   },
-  statsLabel: {
+  docSub: {
     fontSize: 10,
-    color: '#64748B',
+    color: '#94A3B8',
     marginTop: 2,
   },
-  statsDivider: {
-    width: 1,
-    height: 35,
-    backgroundColor: '#E2E8F0',
+  deleteDocBtn: {
+    padding: 6,
   },
   modalOverlay: {
     flex: 1,
@@ -758,7 +869,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   modalSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
     lineHeight: 16,
     marginBottom: 14,

@@ -3,10 +3,12 @@ export type BiologicalSex = 'Masculino' | 'Feminino';
 export interface UserProfile {
   id: string;
   name: string;
+  email: string;
   age: number;
   biologicalSex: BiologicalSex;
   chronicConditions?: string[];
   activeMedications?: string[];
+  avatarUrl?: string;
 }
 
 export type BiomarkerCategory = 'Glicêmico' | 'Lipídico' | 'Hormonal' | 'Hematológico' | 'Inflamatório';
@@ -33,6 +35,18 @@ export interface ExamMeasurement {
   refMax: number;
   status: 'normal' | 'attention' | 'critical';
   notes?: string;
+  documentId?: string;
+}
+
+export interface UploadedDocument {
+  id: string;
+  name: string;
+  uri: string;
+  size?: number;
+  mimeType?: string;
+  uploadedAt: string;
+  extractedCount: number;
+  status: 'processed' | 'processing' | 'error';
 }
 
 export interface WearableDailyReading {
