@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import {
   Camera,
@@ -17,6 +18,11 @@ import {
   Clock,
   Layers,
   FileCheck,
+  Scan,
+  Maximize2,
+  Eye,
+  X,
+  ShieldCheck,
 } from 'lucide-react-native';
 import { useHealthStore } from '../store/useHealthStore';
 import { ExamMeasurement } from '../types';
@@ -33,6 +39,34 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
   const [currentStep, setCurrentStep] = useState<string>('');
   const [extractedResults, setExtractedResults] = useState<ExamMeasurement[] | null>(null);
   const [selectedFileName, setSelectedFileName] = useState<string>('');
+  
+  // Modo Câmera / Scanner Viewfinder
+  const [isCameraActive, setIsCameraActive] = useState<boolean>(false);
+  const [scanLaserPos, setScanLaserPos] = useState<number>(10);
+
+  // Modal de Conferência Rápida
+  const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+
+  // Efeito simples de varredura do laser na câmera
+  useEffect(() => {
+    let interval: any;
+    if (isCameraActive) {
+      interval = setInterval(() => {
+        setScanLaserPos((prev) => (prev > 160 ? 10 : prev + 25));
+      }, 120);
+    }
+    return () => clearInterval(interval);
+  }, [isCameraActive]);
+
+  const handleStartCamera = () => {
+    setIsCameraActive(true);
+    setExtractedResults(null);
+  };
+
+  const handleCaptureSnapshot = async () => {
+    setIsCameraActive(false);
+    await handleSimulateExtraction('Foto_Laudo_Capturado_Câmera.jpg');
+  };
 
   const handleSimulateExtraction = async (fileName: string) => {
     setSelectedFileName(fileName);
@@ -40,7 +74,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
     setExtractedResults(null);
 
     // Passo 1: Leitura do arquivo
-    setCurrentStep('Lendo documento com Gemini Multimodal...');
+    setCurrentStep('Lendo documento com Gemini 2.5 Flash...');
     await new Promise((r) => setTimeout(r, 600));
 
     // Passo 2: Extração estruturada
@@ -54,65 +88,105 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
     setCurrentStep('Exame inserido na Linha do Tempo e Grafo Clínico!');
     setIsProcessing(false);
     setExtractedResults(results);
+    setShowReviewModal(true); // Abre o modal de conferência rápida
   };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Cabeçalho */}
       <View style={styles.header}>
-        <Text style={styles.title}>Digitalização Inteligente</Text>
+        <Text style={styles.title}>Digitalização de Laudos</Text>
         <Text style={styles.subtitle}>
-          Fotografe exames em papel de 10 anos atrás ou suba PDFs de laboratórios. A IA lê e estrutura cada resultado.
+          Fotografe exames em papel de 10 anos atrás ou suba PDFs de laboratórios. A IA lê, desduplica via HNSW e estrutura cada resultado.
         </Text>
       </View>
 
-      {/* Área de Captura Principal */}
-      <View style={styles.uploadArea}>
-        <View style={styles.uploadIconWrapper}>
-          <UploadCloud color="#0D9488" size={32} />
-        </View>
-        <Text style={styles.uploadTitle}>Envie seu laudo para processamento</Text>
-        <Text style={styles.uploadSubtitle}>
-          Suporta PDFs, fotos com sombras, amassados e laudos antigos escaneados
-        </Text>
+      {/* Visor de Câmera / Scanner Inteligente (ETAPA 2) */}
+      {isCameraActive ? (
+        <View style={styles.viewfinderCard}>
+          <View style={styles.viewfinderHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Scan color="#0D9488" size={16} />
+              <Text style={styles.viewfinderTitle}>Visor de Scanner Óptico Ativo</Text>
+            </View>
+            <TouchableOpacity onPress={() => setIsCameraActive(false)}>
+              <X color="#94A3B8" size={18} />
+            </TouchableOpacity>
+          </View>
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity
-            style={styles.primaryActionButton}
-            onPress={() =>
-              handleSimulateExtraction('Foto_Laudo_Amassado_Glicose_2024.jpg')
-            }
-            disabled={isProcessing}
-          >
-            <Camera color="#FFFFFF" size={16} />
-            <Text style={styles.primaryActionButtonText}>Fotografar Exame</Text>
-          </TouchableOpacity>
+          {/* Moldura da Câmera com Guias de Cantos */}
+          <View style={styles.cameraBox}>
+            {/* Linha Laser Animada */}
+            <View style={[styles.scanLaser, { top: scanLaserPos }]} />
 
-          <TouchableOpacity
-            style={styles.secondaryActionButton}
-            onPress={() =>
-              handleSimulateExtraction('Laudo_Fleury_Glicada_Checkup.pdf')
-            }
-            disabled={isProcessing}
-          >
-            <FileText color="#0D9488" size={16} />
-            <Text style={styles.secondaryActionButtonText}>Anexar PDF</Text>
+            {/* Cantos do Viewfinder */}
+            <View style={[styles.corner, styles.cornerTL]} />
+            <View style={[styles.corner, styles.cornerTR]} />
+            <View style={[styles.corner, styles.cornerBL]} />
+            <View style={[styles.corner, styles.cornerBR]} />
+
+            {/* Bounding boxes simuladas sobre o laudo */}
+            <View style={[styles.bbox, { top: 35, left: 20, width: 130 }]}>
+              <Text style={styles.bboxText}>Laboratório: Fleury (99.8%)</Text>
+            </View>
+            <View style={[styles.bbox, { top: 75, left: 30, width: 180 }]}>
+              <Text style={styles.bboxText}>Glicemia de Jejum: 108 mg/dL</Text>
+            </View>
+            <View style={[styles.bbox, { top: 115, left: 30, width: 170 }]}>
+              <Text style={styles.bboxText}>Hemoglobina Glicada: 5.8%</Text>
+            </View>
+
+            <Text style={styles.cameraHint}>Alinhe o laudo dentro do quadro e segure firme</Text>
+          </View>
+
+          <TouchableOpacity style={styles.captureButton} onPress={handleCaptureSnapshot}>
+            <Camera color="#FFFFFF" size={18} />
+            <Text style={styles.captureButtonText}>Capturar & Extrair com IA</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      ) : (
+        /* Área de Upload Padrão */
+        <View style={styles.uploadArea}>
+          <View style={styles.uploadIconWrapper}>
+            <UploadCloud color="#0D9488" size={32} />
+          </View>
+          <Text style={styles.uploadTitle}>Envie ou fotografe seu exame</Text>
+          <Text style={styles.uploadSubtitle}>
+            Suporta fotos de celular, laudos amassados, PDFs digitais e exames antigos
+          </Text>
+
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.primaryActionButton}
+              onPress={handleStartCamera}
+              disabled={isProcessing}
+            >
+              <Camera color="#FFFFFF" size={16} />
+              <Text style={styles.primaryActionButtonText}>Abrir Câmera Scanner</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.secondaryActionButton}
+              onPress={() => handleSimulateExtraction('Laudo_Fleury_Glicada_Checkup.pdf')}
+              disabled={isProcessing}
+            >
+              <FileText color="#0D9488" size={16} />
+              <Text style={styles.secondaryActionButtonText}>Anexar PDF</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Cenários Rápidos para Live Demo (Garante 100% de estabilidade) */}
       <View style={styles.demoSection}>
         <View style={styles.demoBadge}>
           <Sparkles color="#6366F1" size={14} />
-          <Text style={styles.demoBadgeText}>Cenários Rápidos para Demonstração</Text>
+          <Text style={styles.demoBadgeText}>Cenários Determinísticos para Apresentação</Text>
         </View>
 
         <TouchableOpacity
           style={styles.presetCard}
-          onPress={() =>
-            handleSimulateExtraction('Exame_HemoglobinaGlicada_2026_Fleury.pdf')
-          }
+          onPress={() => handleSimulateExtraction('Exame_HemoglobinaGlicada_2026_Fleury.pdf')}
           disabled={isProcessing}
         >
           <View style={styles.presetIcon}>
@@ -129,9 +203,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
 
         <TouchableOpacity
           style={styles.presetCard}
-          onPress={() =>
-            handleSimulateExtraction('Foto_Exame_Papel_Amassado_2024.jpg')
-          }
+          onPress={() => handleSimulateExtraction('Foto_Exame_Papel_Amassado_2024.jpg')}
           disabled={isProcessing}
         >
           <View style={[styles.presetIcon, { backgroundColor: '#FEF3C7' }]}>
@@ -140,7 +212,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
           <View style={{ flex: 1 }}>
             <Text style={styles.presetTitle}>Foto de Papel Amassado com Ruído</Text>
             <Text style={styles.presetDesc}>
-              Demonstra tolerância da IA a sombras e caligrafia mista de laboratório.
+              Demonstra tolerância da IA multimodal a sombras e distorções de captura.
             </Text>
           </View>
           <ArrowRight color="#94A3B8" size={16} />
@@ -158,7 +230,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
         </View>
       )}
 
-      {/* Resultados da Extração Recente (Structured Output) */}
+      {/* Card de Resultados da Extração Recente */}
       {extractedResults && (
         <View style={styles.resultCard}>
           <View style={styles.resultHeader}>
@@ -169,6 +241,9 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
                 {extractedResults.length} biomarcadores mapeados e integrados ao histórico.
               </Text>
             </View>
+            <TouchableOpacity onPress={() => setShowReviewModal(true)}>
+              <Text style={styles.reviewLink}>Ver Detalhes</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.extractedTable}>
@@ -177,7 +252,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
                 <View style={{ flex: 1 }}>
                   <Text style={styles.extractedName}>{item.canonicalName}</Text>
                   <Text style={styles.extractedRef}>
-                    Faixa de Referência: {item.refMin} - {item.refMax} {item.unit}
+                    Faixa: {item.refMin} - {item.refMax} {item.unit}
                   </Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
@@ -216,7 +291,7 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
         </View>
       )}
 
-      {/* Estatísticas de Digitalização */}
+      {/* Estatísticas do Histórico Clínico */}
       <View style={styles.statsCard}>
         <View style={styles.statsItem}>
           <Layers color="#0D9488" size={18} />
@@ -226,16 +301,62 @@ export const ExamIngestionScreen: React.FC<ExamIngestionScreenProps> = ({
         <View style={styles.statsDivider} />
         <View style={styles.statsItem}>
           <Clock color="#3B82F6" size={18} />
-          <Text style={styles.statsNumber}>4 anos</Text>
-          <Text style={styles.statsLabel}>Janela de Histórico</Text>
+          <Text style={styles.statsNumber}>5 anos</Text>
+          <Text style={styles.statsLabel}>Janela Histórica</Text>
         </View>
         <View style={styles.statsDivider} />
         <View style={styles.statsItem}>
           <Sparkles color="#8B5CF6" size={18} />
           <Text style={styles.statsNumber}>100%</Text>
-          <Text style={styles.statsLabel}>Structured JSON</Text>
+          <Text style={styles.statsLabel}>Structured Output</Text>
         </View>
       </View>
+
+      {/* Modal de Conferência Rápida (ETAPA 2) */}
+      <Modal visible={showReviewModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <ShieldCheck color="#0D9488" size={20} />
+                <Text style={styles.modalTitle}>Conferência de Extração IA</Text>
+              </View>
+              <TouchableOpacity onPress={() => setShowReviewModal(false)}>
+                <X color="#64748B" size={20} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.modalSubtitle}>
+              Revisão dos campos lidos pelo Gemini 2.5 Flash com índice de confiança de 99.2%:
+            </Text>
+
+            {extractedResults?.map((r) => (
+              <View key={r.id} style={styles.modalItemBox}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalItemName}>{r.canonicalName}</Text>
+                  <Text style={styles.modalItemLab}>
+                    {r.labName} • {r.date}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={styles.modalItemVal}>
+                    {r.value} {r.unit}
+                  </Text>
+                  <Text style={styles.modalConfidence}>Confiança: 99.4%</Text>
+                </View>
+              </View>
+            ))}
+
+            <TouchableOpacity
+              style={styles.modalConfirmButton}
+              onPress={() => setShowReviewModal(false)}
+            >
+              <CheckCircle2 color="#FFFFFF" size={16} />
+              <Text style={styles.modalConfirmText}>Confirmar e Integrar ao Grafo</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -255,14 +376,103 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0F172A',
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
     marginTop: 4,
-    lineHeight: 18,
+    lineHeight: 17,
+  },
+  viewfinderCard: {
+    backgroundColor: '#0F172A',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 20,
+  },
+  viewfinderHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  viewfinderTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#2DD4BF',
+    textTransform: 'uppercase',
+  },
+  cameraBox: {
+    height: 190,
+    backgroundColor: '#1E293B',
+    borderRadius: 14,
+    position: 'relative',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  scanLaser: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: 2,
+    backgroundColor: '#2DD4BF',
+    shadowColor: '#2DD4BF',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+  },
+  corner: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderColor: '#2DD4BF',
+  },
+  cornerTL: { top: 12, left: 12, borderTopWidth: 3, borderLeftWidth: 3 },
+  cornerTR: { top: 12, right: 12, borderTopWidth: 3, borderRightWidth: 3 },
+  cornerBL: { bottom: 12, left: 12, borderBottomWidth: 3, borderLeftWidth: 3 },
+  cornerBR: { bottom: 12, right: 12, borderBottomWidth: 3, borderRightWidth: 3 },
+  bbox: {
+    position: 'absolute',
+    backgroundColor: 'rgba(45, 212, 191, 0.25)',
+    borderWidth: 1,
+    borderColor: '#2DD4BF',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  bboxText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  cameraHint: {
+    position: 'absolute',
+    bottom: 12,
+    fontSize: 10,
+    color: '#94A3B8',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  captureButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0D9488',
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 14,
+    gap: 8,
+  },
+  captureButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
   },
   uploadArea: {
     backgroundColor: '#FFFFFF',
@@ -270,27 +480,27 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#CCFBF1',
     borderStyle: 'dashed',
-    padding: 24,
+    padding: 22,
     alignItems: 'center',
     marginBottom: 20,
   },
   uploadIconWrapper: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#F0FDFA',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   uploadTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     color: '#0F172A',
     textAlign: 'center',
   },
   uploadSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
     textAlign: 'center',
     marginTop: 4,
@@ -307,16 +517,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#0D9488',
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   primaryActionButtonText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
   },
   secondaryActionButton: {
     flex: 1,
@@ -325,16 +535,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#99F6E4',
     paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
   },
   secondaryActionButtonText: {
     color: '#0D9488',
     fontWeight: '700',
-    fontSize: 13,
+    fontSize: 12,
   },
   demoSection: {
     marginBottom: 20,
@@ -346,8 +556,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   demoBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
+    fontSize: 11,
+    fontWeight: '800',
     color: '#4F46E5',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -364,8 +574,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   presetIcon: {
-    width: 40,
-    height: 40,
+    width: 38,
+    height: 38,
     borderRadius: 10,
     backgroundColor: '#CCFBF1',
     justifyContent: 'center',
@@ -421,13 +631,18 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   resultTitle: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 14,
+    fontWeight: '800',
     color: '#065F46',
   },
   resultSubtitle: {
     fontSize: 11,
     color: '#047857',
+  },
+  reviewLink: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0D9488',
   },
   extractedTable: {
     borderTopWidth: 1,
@@ -457,7 +672,7 @@ const styles = StyleSheet.create({
     color: '#0F172A',
   },
   extractedValAlert: {
-    color: '#DC2626',
+    color: '#E11D48',
   },
   extractedStatusBadge: {
     fontSize: 10,
@@ -472,8 +687,8 @@ const styles = StyleSheet.create({
     color: '#15803D',
   },
   extractedStatusBadgeAlert: {
-    backgroundColor: '#FEE2E2',
-    color: '#B91C1C',
+    backgroundColor: '#FFE4E6',
+    color: '#BE123C',
   },
   viewTimelineButton: {
     flexDirection: 'row',
@@ -505,7 +720,7 @@ const styles = StyleSheet.create({
   },
   statsNumber: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0F172A',
     marginTop: 4,
   },
@@ -518,5 +733,81 @@ const styles = StyleSheet.create({
     width: 1,
     height: 35,
     backgroundColor: '#E2E8F0',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    paddingBottom: 34,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+    lineHeight: 16,
+    marginBottom: 14,
+  },
+  modalItemBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 8,
+  },
+  modalItemName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  modalItemLab: {
+    fontSize: 11,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  modalItemVal: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  modalConfidence: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#10B981',
+    marginTop: 2,
+  },
+  modalConfirmButton: {
+    flexDirection: 'row',
+    backgroundColor: '#0D9488',
+    paddingVertical: 14,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+    gap: 8,
+  },
+  modalConfirmText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
   },
 });

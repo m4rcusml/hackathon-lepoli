@@ -17,22 +17,58 @@ import {
   Sparkles,
   FileCheck,
   Watch,
-  Info,
   ShieldCheck,
+  Mic,
+  MicOff,
+  Pill,
+  HeartPulse,
+  AlertTriangle,
+  ArrowRight,
 } from 'lucide-react-native';
 import { useHealthStore } from '../store/useHealthStore';
 
 export const AssistantChatScreen: React.FC = () => {
-  const { chatMessages, sendChatMessage } = useHealthStore();
+  const { chatMessages, sendChatMessage, isSimulatedAnomalyActive } = useHealthStore();
   const [inputText, setInputText] = useState<string>('');
   const [isSending, setIsSending] = useState<boolean>(false);
+  const [isRecordingAudio, setIsRecordingAudio] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('Todos');
 
-  const quickPrompts = [
-    'Por que sinto taquicardia e cansaço?',
-    'Como está a evolução da minha glicose?',
-    'Meu padrão de sono piorou recentemente?',
-    'Gere um resumo executivo para meu médico',
+  const categories = [
+    { id: 'Todos', label: 'Tudo', icon: Sparkles },
+    { id: 'Alertas', label: 'Alertas Ativos', icon: AlertTriangle },
+    { id: 'Exames', label: 'Exames de Sangue', icon: FileCheck },
+    { id: 'Wearables', label: 'Sinais Vitais', icon: HeartPulse },
+    { id: 'Remedios', label: 'Medicações', icon: Pill },
   ];
+
+  const quickPromptsByCategory: Record<string, string[]> = {
+    Todos: [
+      'Por que sinto taquicardia e cansaço?',
+      'Como está a evolução da minha glicose?',
+      'Meu sono profundo piorou recentemente?',
+      'Gere um resumo para levar na consulta médica',
+    ],
+    Alertas: [
+      'Explique o episódio de taquicardia das 03:15',
+      'Minha arritmia noturna é perigosa?',
+      'O que fazer diante do alerta de HRV baixo?',
+    ],
+    Exames: [
+      'Por que minha ferritina caiu em 2025?',
+      'O que significa minha glicemia estar em 104?',
+      'Quais exames estão fora da faixa de normalidade?',
+    ],
+    Wearables: [
+      'Qual é minha frequência cardíaca de repouso?',
+      'Quantas horas de sono profundo tive esta semana?',
+      'Minha saturação SpO2 está boa?',
+    ],
+    Remedios: [
+      'Meu suplemento de Vitamina D interfere na glicemia?',
+      'Existe interação entre meus laudos e remédios?',
+    ],
+  };
 
   const handleSend = async (textToSend?: string) => {
     const text = textToSend || inputText;
@@ -44,6 +80,14 @@ export const AssistantChatScreen: React.FC = () => {
     setIsSending(false);
   };
 
+  const handleSimulateVoiceInput = () => {
+    setIsRecordingAudio(true);
+    setTimeout(() => {
+      setIsRecordingAudio(false);
+      handleSend('Estou sentindo palpitações no peito ao acordar e muito cansaço físico.');
+    }, 2000);
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -52,19 +96,41 @@ export const AssistantChatScreen: React.FC = () => {
       {/* Cabeçalho */}
       <View style={styles.header}>
         <View style={styles.botAvatar}>
-          <Bot color="#0D9488" size={20} />
+          <Bot color="#0D9488" size={22} />
         </View>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text style={styles.title}>Assistente de Saúde Pessoal</Text>
+            <Text style={styles.title}>Assistente Clínico Pessoal</Text>
             <View style={styles.activePill}>
-              <Text style={styles.activePillText}>GraphRAG</Text>
+              <Text style={styles.activePillText}>Hybrid GraphRAG</Text>
             </View>
           </View>
           <Text style={styles.subtitle}>
-            Respostas fundamentadas no seu histórico de exames e relógio
+            Ancorado nos laudos de 2022-2026 e nos sinais vitais do Apple Watch
           </Text>
         </View>
+      </View>
+
+      {/* Categorias de Navegação Rápida (ETAPA 5) */}
+      <View style={styles.categoriesBar}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesScroll}>
+          {categories.map((cat) => {
+            const IconComponent = cat.icon;
+            const isSelected = selectedCategory === cat.id;
+            return (
+              <TouchableOpacity
+                key={cat.id}
+                style={[styles.categoryChip, isSelected && styles.categoryChipActive]}
+                onPress={() => setSelectedCategory(cat.id)}
+              >
+                <IconComponent size={12} color={isSelected ? '#FFFFFF' : '#64748B'} />
+                <Text style={[styles.categoryChipText, isSelected && styles.categoryChipTextActive]}>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
       {/* Mensagens do Chat */}
@@ -76,7 +142,7 @@ export const AssistantChatScreen: React.FC = () => {
         <View style={styles.disclaimerBox}>
           <ShieldCheck color="#0D9488" size={16} />
           <Text style={styles.disclaimerText}>
-            Este assistente cruza dados reais do seu histórico laboratorial e sinais do wearable para apoiar suas decisões e enriquecer sua consulta médica.
+            Contexto ativado: o assistente correlaciona seus laudos laboratoriais, medicamentos em uso e leituras em repouso dos wearables.
           </Text>
         </View>
 
@@ -111,10 +177,23 @@ export const AssistantChatScreen: React.FC = () => {
                   {msg.text}
                 </Text>
 
+                {/* Mini-Widgets Clínicos Embutidos (ETAPA 5) */}
+                {!isUser && isSimulatedAnomalyActive && msg.text.includes('taquicardia') && (
+                  <View style={styles.widgetCard}>
+                    <View style={styles.widgetHeader}>
+                      <AlertTriangle color="#E11D48" size={14} />
+                      <Text style={styles.widgetTitle}>Detecção no Apple Watch: 114 BPM</Text>
+                    </View>
+                    <Text style={styles.widgetDesc}>
+                      Episódio às 03:15 da madrugada associado a Ferritina Sérica de 22 ng/mL (Abaixo da ref. 30-400).
+                    </Text>
+                  </View>
+                )}
+
                 {/* Fontes Citadas pelo GraphRAG */}
                 {msg.citedSources && msg.citedSources.length > 0 && (
                   <View style={styles.sourcesBox}>
-                    <Text style={styles.sourcesHeader}>Fontes Clínicas Citadas:</Text>
+                    <Text style={styles.sourcesHeader}>Evidências do Grafo Clínico:</Text>
                     {msg.citedSources.map((src, i) => (
                       <View key={i} style={styles.sourceItem}>
                         {src.sourceType === 'wearable' ? (
@@ -152,9 +231,22 @@ export const AssistantChatScreen: React.FC = () => {
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <ActivityIndicator size="small" color="#0D9488" />
                 <Text style={styles.typingText}>
-                  Consultando subgrafo e séries temporais...
+                  Recuperando nós do grafo e calculando correlação...
                 </Text>
               </View>
+            </View>
+          </View>
+        )}
+
+        {/* Simulação de Gravação de Áudio com Waveform */}
+        {isRecordingAudio && (
+          <View style={styles.audioRecordingCard}>
+            <View style={styles.recordingDot} />
+            <Text style={styles.recordingText}>Gravando sintoma por voz com IA...</Text>
+            <View style={styles.waveformSimulation}>
+              {[12, 24, 18, 30, 16, 28, 14, 22].map((h, i) => (
+                <View key={i} style={[styles.waveBar, { height: h }]} />
+              ))}
             </View>
           </View>
         )}
@@ -163,7 +255,7 @@ export const AssistantChatScreen: React.FC = () => {
       {/* Sugestões de Perguntas Rápidas */}
       <View style={styles.promptsContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.promptsScroll}>
-          {quickPrompts.map((prompt, idx) => (
+          {(quickPromptsByCategory[selectedCategory] || quickPromptsByCategory['Todos']).map((prompt, idx) => (
             <TouchableOpacity
               key={idx}
               style={styles.promptChip}
@@ -177,17 +269,26 @@ export const AssistantChatScreen: React.FC = () => {
         </ScrollView>
       </View>
 
-      {/* Barra de Input */}
+      {/* Barra de Input com Botão de Voz */}
       <View style={styles.inputArea}>
+        <TouchableOpacity
+          style={[styles.micButton, isRecordingAudio && styles.micButtonActive]}
+          onPress={handleSimulateVoiceInput}
+          disabled={isSending}
+        >
+          {isRecordingAudio ? <MicOff color="#FFFFFF" size={18} /> : <Mic color="#0D9488" size={18} />}
+        </TouchableOpacity>
+
         <TextInput
           style={styles.textInput}
-          placeholder="Tire dúvidas sobre seus exames ou sinais vitais..."
+          placeholder="Pergunte sobre seus exames, sono ou coração..."
           placeholderTextColor="#94A3B8"
           value={inputText}
           onChangeText={setInputText}
           onSubmitEditing={() => handleSend()}
-          editable={!isSending}
+          editable={!isSending && !isRecordingAudio}
         />
+
         <TouchableOpacity
           style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
           onPress={() => handleSend()}
@@ -216,9 +317,9 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   botAvatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: '#F0FDFA',
     borderWidth: 1,
     borderColor: '#99F6E4',
@@ -244,6 +345,40 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 11,
     color: '#64748B',
+  },
+  categoriesBar: {
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+    paddingVertical: 6,
+  },
+  categoriesScroll: {
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  categoryChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    gap: 5,
+  },
+  categoryChipActive: {
+    backgroundColor: '#0D9488',
+    borderColor: '#0F766E',
+  },
+  categoryChipText: {
+    fontSize: 11,
+    color: '#475569',
+    fontWeight: '600',
+  },
+  categoryChipTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   chatArea: {
     flex: 1,
@@ -291,8 +426,8 @@ const styles = StyleSheet.create({
   },
   messageBubble: {
     maxWidth: '82%',
-    borderRadius: 16,
-    padding: 12,
+    borderRadius: 18,
+    padding: 14,
   },
   bubbleUser: {
     backgroundColor: '#0D9488',
@@ -303,6 +438,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E2E8F0',
     borderBottomLeftRadius: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   messageText: {
     fontSize: 13,
@@ -314,6 +454,30 @@ const styles = StyleSheet.create({
   messageTextAssistant: {
     color: '#1E293B',
   },
+  widgetCard: {
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+  },
+  widgetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  widgetTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#BE123C',
+  },
+  widgetDesc: {
+    fontSize: 10,
+    color: '#881337',
+    lineHeight: 14,
+  },
   sourcesBox: {
     marginTop: 10,
     paddingTop: 8,
@@ -323,7 +487,7 @@ const styles = StyleSheet.create({
   },
   sourcesHeader: {
     fontSize: 10,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#64748B',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -347,6 +511,39 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748B',
     fontStyle: 'italic',
+  },
+  audioRecordingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF1F2',
+    borderWidth: 1,
+    borderColor: '#FECDD3',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 16,
+    gap: 10,
+  },
+  recordingDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#E11D48',
+  },
+  recordingText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#BE123C',
+    flex: 1,
+  },
+  waveformSimulation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  waveBar: {
+    width: 3,
+    backgroundColor: '#E11D48',
+    borderRadius: 2,
   },
   promptsContainer: {
     backgroundColor: '#FFFFFF',
@@ -372,7 +569,7 @@ const styles = StyleSheet.create({
   promptChipText: {
     fontSize: 11,
     color: '#334155',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   inputArea: {
     flexDirection: 'row',
@@ -381,8 +578,22 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#E2E8F0',
     padding: 10,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     gap: 8,
+  },
+  micButton: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#F0FDFA',
+    borderWidth: 1,
+    borderColor: '#99F6E4',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  micButtonActive: {
+    backgroundColor: '#E11D48',
+    borderColor: '#BE123C',
   },
   textInput: {
     flex: 1,

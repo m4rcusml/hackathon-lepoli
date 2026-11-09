@@ -18,8 +18,12 @@ import {
   ArrowRight,
   ShieldAlert,
   CheckCircle2,
+  Wind,
+  Footprints,
 } from 'lucide-react-native';
 import { useHealthStore } from '../store/useHealthStore';
+import { Sparkline } from '../components/Sparkline';
+import { TachogramChart } from '../components/TachogramChart';
 import Svg, { Polyline, Circle, Line, Text as SvgText } from 'react-native-svg';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -62,39 +66,54 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
     })
     .join(' ');
 
+  // Dados para sparklines individuais dos cards
+  const sparkBpm = wearables.slice(-14).map((w) => w.restingHeartRate);
+  const sparkHrv = wearables.slice(-14).map((w) => w.hrv);
+  const sparkSleep = wearables.slice(-14).map((w) => w.sleepHours);
+  const sparkSteps = wearables.slice(-14).map((w) => w.steps);
+
+  // Decomposição dos estágios de sono (Apple Health / Oura style)
+  const totalSleep = latest?.sleepHours || 7.2;
+  const deepSleep = latest?.deepSleepHours || (isSimulatedAnomalyActive ? 0.3 : 1.8);
+  const remSleep = latest?.remSleepHours || (isSimulatedAnomalyActive ? 0.8 : 1.7);
+  const lightSleep = Math.max(0.5, Number((totalSleep - deepSleep - remSleep).toFixed(1)));
+  const deepPct = Math.round((deepSleep / totalSleep) * 100);
+  const remPct = Math.round((remSleep / totalSleep) * 100);
+  const lightPct = Math.max(5, 100 - deepPct - remPct);
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       {/* Cabeçalho */}
       <View style={styles.header}>
         <Text style={styles.title}>Sinais Contínuos & Wearables</Text>
         <Text style={styles.subtitle}>
-          Dados em tempo real de relógios e anéis inteligentes integrados ao mesmo histórico clínico.
+          Monitoramento fisiológico contínuo sincronizado com o Apple Watch e anéis inteligentes.
         </Text>
       </View>
 
-      {/* Status do Dispositivo */}
+      {/* Status do Dispositivo Pareado */}
       <View style={styles.deviceStatusCard}>
         <View style={styles.deviceIconBox}>
           <Watch color="#0D9488" size={24} />
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.deviceName}>Apple Watch Series 9</Text>
-          <Text style={styles.deviceSub}>Sincronizado via HealthKit • Há 4 minutos</Text>
+          <Text style={styles.deviceName}>Apple Watch Ultra 2</Text>
+          <Text style={styles.deviceSub}>HealthKit Streaming • BLE GATT 0x180D • Há 2 min</Text>
         </View>
         <View style={styles.deviceConnectedBadge}>
           <View style={styles.connectedDot} />
-          <Text style={styles.connectedText}>Ativo</Text>
+          <Text style={styles.connectedText}>Ao Vivo</Text>
         </View>
       </View>
 
-      {/* Caixa de Controle do Simulador (A Aposta Matadora da Demo - RF-P03) */}
+      {/* Caixa de Controle do Simulador Determinístico (RF-P03) */}
       <View style={styles.simulatorBox}>
         <View style={styles.simulatorHeader}>
           <Zap color="#E11D48" size={16} />
-          <Text style={styles.simulatorTitle}>Controlador de Simulação da Live Demo</Text>
+          <Text style={styles.simulatorTitle}>Controlador do Simulador de Palco</Text>
         </View>
         <Text style={styles.simulatorDesc}>
-          Simule eventos fisiológicos agudos de forma determinística e estável em palco sem depender de conexões físicas.
+          Simule eventos fisiológicos agudos de arritmia e taquicardia noturna em tempo real para a banca.
         </Text>
 
         <View style={styles.simulatorActions}>
@@ -108,8 +127,8 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
             <ShieldAlert color="#FFFFFF" size={16} />
             <Text style={styles.simButtonTriggerText}>
               {isSimulatedAnomalyActive
-                ? '⚡ Anomalia Disparada (Taquicardia)'
-                : 'Simular Episódio de Taquicardia'}
+                ? '⚡ Anomalia Ativa (114 BPM)'
+                : 'Disparar Taquicardia Noturna'}
             </Text>
           </TouchableOpacity>
 
@@ -125,15 +144,19 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
         </View>
       </View>
 
-      {/* Card de Alerta Proativo Ativo (RF-P04) */}
+      {/* Card de Alerta Proativo com Tacograma Noturno (RF-P04 / ETAPA 4) */}
       {activeAlerts.length > 0 ? (
         <View style={styles.alertCard}>
           <View style={styles.alertHeader}>
-            <AlertTriangle color="#DC2626" size={20} />
+            <AlertTriangle color="#E11D48" size={20} />
             <Text style={styles.alertTitle}>Alerta Clínico Detectado</Text>
           </View>
           <Text style={styles.alertMainText}>{activeAlerts[0].title}</Text>
           <Text style={styles.alertSubText}>{activeAlerts[0].description}</Text>
+
+          {/* Gráfico do Tacograma do Disparo Noturno às 03:15 */}
+          <Text style={styles.tacogramHeader}>Registro do Tacograma Noturno (00:00 - 06:30):</Text>
+          <TachogramChart width={SCREEN_WIDTH - 64} height={100} />
 
           <View style={styles.contextBox}>
             <Text style={styles.contextTitle}>Contexto do Grafo Clínico:</Text>
@@ -147,7 +170,7 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
               style={styles.actionChatButton}
               onPress={() => onNavigateToTab('Assistente')}
             >
-              <Text style={styles.actionChatButtonText}>Perguntar ao Assistente IA</Text>
+              <Text style={styles.actionChatButtonText}>Investigar no Assistente IA</Text>
               <ArrowRight color="#FFFFFF" size={14} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -164,18 +187,18 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
           <View style={{ flex: 1, marginLeft: 10 }}>
             <Text style={styles.normalTitle}>Ritmo Cardíaco & Sono Estáveis</Text>
             <Text style={styles.normalSub}>
-              Nenhum indício de arritmia ou apneia detectado nos últimos 30 dias.
+              Sem indícios de fibrilação atrial, apneia ou taquicardia nos últimos 30 dias.
             </Text>
           </View>
         </View>
       )}
 
-      {/* Gráfico da Série Temporal de Frequência Cardíaca (30 dias) */}
+      {/* Gráfico da Série Temporal de FC (30 dias) */}
       <View style={styles.chartContainer}>
         <View style={styles.chartHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Heart color="#EF4444" size={18} />
-            <Text style={styles.chartTitle}>Frequência Cardíaca Basal (30 dias)</Text>
+            <Heart color="#E11D48" size={18} />
+            <Text style={styles.chartTitle}>Frequência Cardíaca em Repouso (30 dias)</Text>
           </View>
           <Text
             style={[
@@ -188,21 +211,22 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
         </View>
 
         <Svg width={chartW} height={chartH}>
-          {/* Linha de Limiar de Alerta (100 BPM) */}
+          {/* Limiar de Alerta 100 BPM */}
           <Line
             x1={padL}
             y1={padT + innerH - ((100 - minBpm) / bpmRange) * innerH}
             x2={padL + innerW}
             y2={padT + innerH - ((100 - minBpm) / bpmRange) * innerH}
-            stroke="#FCA5A5"
+            stroke="#FECDD3"
             strokeDasharray="4,4"
             strokeWidth={1}
           />
           <SvgText
             x={padL - 4}
             y={padT + innerH - ((100 - minBpm) / bpmRange) * innerH + 3}
-            fill="#EF4444"
+            fill="#E11D48"
             fontSize={9}
+            fontWeight="700"
             textAnchor="end"
           >
             100
@@ -212,16 +236,15 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
           <Polyline
             points={pointsStr}
             fill="none"
-            stroke={isSimulatedAnomalyActive ? '#DC2626' : '#EF4444'}
+            stroke={isSimulatedAnomalyActive ? '#E11D48' : '#EF4444'}
             strokeWidth={2.5}
           />
 
-          {/* Destaque do último ponto */}
           <Circle
             cx={padL + innerW}
             cy={padT + innerH - ((latest.restingHeartRate - minBpm) / bpmRange) * innerH}
             r={isSimulatedAnomalyActive ? 6 : 4}
-            fill={isSimulatedAnomalyActive ? '#DC2626' : '#EF4444'}
+            fill={isSimulatedAnomalyActive ? '#E11D48' : '#EF4444'}
             stroke="#FFFFFF"
             strokeWidth={2}
           />
@@ -233,36 +256,72 @@ export const WearablesScreen: React.FC<WearablesScreenProps> = ({ onNavigateToTa
         </View>
       </View>
 
-      {/* Grid de Métricas Secundárias (HRV e Sono) */}
+      {/* Decomposição dos Estágios de Sono (ETAPA 4) */}
+      <View style={styles.sleepStageCard}>
+        <View style={styles.sleepHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Moon color="#8B5CF6" size={18} />
+            <Text style={styles.sleepTitle}>Arquitetura e Estágios do Sono</Text>
+          </View>
+          <Text style={styles.sleepTotalText}>{totalSleep}h total</Text>
+        </View>
+
+        {/* Barra Segmentada de Sono */}
+        <View style={styles.sleepBarContainer}>
+          <View style={[styles.sleepSegment, { width: `${deepPct}%`, backgroundColor: '#4C1D95' }]} />
+          <View style={[styles.sleepSegment, { width: `${remPct}%`, backgroundColor: '#8B5CF6' }]} />
+          <View style={[styles.sleepSegment, { width: `${lightPct}%`, backgroundColor: '#DDD6FE' }]} />
+        </View>
+
+        {/* Legenda dos Estágios */}
+        <View style={styles.sleepLegendRow}>
+          <View style={styles.sleepLegendItem}>
+            <View style={[styles.sleepDot, { backgroundColor: '#4C1D95' }]} />
+            <Text style={styles.sleepLegendText}>Profundo: {deepSleep}h ({deepPct}%)</Text>
+          </View>
+          <View style={styles.sleepLegendItem}>
+            <View style={[styles.sleepDot, { backgroundColor: '#8B5CF6' }]} />
+            <Text style={styles.sleepLegendText}>REM: {remSleep}h ({remPct}%)</Text>
+          </View>
+          <View style={styles.sleepLegendItem}>
+            <View style={[styles.sleepDot, { backgroundColor: '#DDD6FE' }]} />
+            <Text style={styles.sleepLegendText}>Leve: {lightSleep}h</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Grid de Métricas com Micro-Sparklines */}
       <View style={styles.metricsGrid}>
         <View style={styles.metricCard}>
           <View style={styles.metricHeader}>
             <Activity color="#3B82F6" size={16} />
             <Text style={styles.metricLabel}>Variabilidade (HRV)</Text>
           </View>
-          <Text style={styles.metricVal}>
-            {latest?.hrv} <Text style={styles.metricUnit}>ms</Text>
-          </Text>
+          <View style={styles.metricRowWithSpark}>
+            <Text style={styles.metricVal}>
+              {latest?.hrv} <Text style={styles.metricUnit}>ms</Text>
+            </Text>
+            <Sparkline data={sparkHrv} color="#3B82F6" width={60} height={24} />
+          </View>
           <Text style={styles.metricNote}>
             {isSimulatedAnomalyActive
               ? 'Queda drástica de recuperação'
-              : 'Faixa saudável para sua idade'}
+              : 'Faixa saudável para 32 anos'}
           </Text>
         </View>
 
         <View style={styles.metricCard}>
           <View style={styles.metricHeader}>
-            <Moon color="#8B5CF6" size={16} />
-            <Text style={styles.metricLabel}>Sono Profundo</Text>
+            <Wind color="#0D9488" size={16} />
+            <Text style={styles.metricLabel}>Oxigenação (SpO2)</Text>
           </View>
-          <Text style={styles.metricVal}>
-            {latest?.deepSleepHours} <Text style={styles.metricUnit}>h</Text>
-          </Text>
-          <Text style={styles.metricNote}>
-            {isSimulatedAnomalyActive
-              ? 'Sono fragmentado e não reparador'
-              : 'Ideal: > 1.5h por noite'}
-          </Text>
+          <View style={styles.metricRowWithSpark}>
+            <Text style={styles.metricVal}>
+              {latest?.spo2}%
+            </Text>
+            <Sparkline data={[98, 97, 98, 98, 99, 98, 98]} color="#0D9488" width={60} height={24} />
+          </View>
+          <Text style={styles.metricNote}>Saturação ideal contínua</Text>
         </View>
       </View>
     </ScrollView>
@@ -284,14 +343,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 22,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0F172A',
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#64748B',
     marginTop: 4,
-    lineHeight: 18,
+    lineHeight: 17,
   },
   deviceStatusCard: {
     flexDirection: 'row',
@@ -314,7 +373,7 @@ const styles = StyleSheet.create({
   },
   deviceName: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#0F172A',
   },
   deviceSub: {
@@ -339,14 +398,14 @@ const styles = StyleSheet.create({
   },
   connectedText: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#15803D',
   },
   simulatorBox: {
     backgroundColor: '#FFF1F2',
     borderWidth: 1.5,
     borderColor: '#FECDD3',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     marginBottom: 16,
   },
@@ -357,13 +416,13 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   simulatorTitle: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     color: '#BE123C',
     textTransform: 'uppercase',
   },
   simulatorDesc: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#881337',
     lineHeight: 16,
     marginBottom: 12,
@@ -378,9 +437,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#E11D48',
-    paddingVertical: 10,
+    paddingVertical: 11,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 6,
   },
   simButtonActive: {
@@ -388,7 +447,7 @@ const styles = StyleSheet.create({
   },
   simButtonTriggerText: {
     color: '#FFFFFF',
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: 12,
   },
   simButtonReset: {
@@ -397,24 +456,24 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#CBD5E1',
-    paddingVertical: 10,
+    paddingVertical: 11,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 6,
   },
   simButtonResetText: {
     color: '#334155',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 12,
   },
   alertCard: {
     backgroundColor: '#FFFFFF',
     borderWidth: 2,
-    borderColor: '#EF4444',
-    borderRadius: 16,
+    borderColor: '#E11D48',
+    borderRadius: 18,
     padding: 16,
     marginBottom: 16,
-    shadowColor: '#EF4444',
+    shadowColor: '#E11D48',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -427,14 +486,14 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   alertTitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '800',
-    color: '#DC2626',
+    color: '#BE123C',
     textTransform: 'uppercase',
   },
   alertMainText: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#0F172A',
     marginBottom: 4,
   },
@@ -442,12 +501,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#475569',
     lineHeight: 16,
-    marginBottom: 10,
+    marginBottom: 8,
+  },
+  tacogramHeader: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#881337',
+    marginTop: 6,
   },
   contextBox: {
     backgroundColor: '#F8FAFC',
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 10,
+    marginTop: 8,
     marginBottom: 12,
   },
   contextTitle: {
@@ -471,8 +537,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#0D9488',
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 11,
+    borderRadius: 11,
     gap: 6,
   },
   actionChatButtonText: {
@@ -482,15 +548,15 @@ const styles = StyleSheet.create({
   },
   actionShareButton: {
     backgroundColor: '#F1F5F9',
-    paddingVertical: 10,
+    paddingVertical: 11,
     paddingHorizontal: 12,
-    borderRadius: 10,
+    borderRadius: 11,
     justifyContent: 'center',
     alignItems: 'center',
   },
   actionShareButtonText: {
     color: '#334155',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 12,
   },
   normalCard: {
@@ -505,7 +571,7 @@ const styles = StyleSheet.create({
   },
   normalTitle: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
     color: '#166534',
   },
   normalSub: {
@@ -515,7 +581,7 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -528,17 +594,17 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   chartTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#1E293B',
   },
   chartCurrentBpm: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#EF4444',
   },
   chartCurrentBpmAlert: {
-    color: '#DC2626',
+    color: '#E11D48',
     fontSize: 18,
   },
   chartFooter: {
@@ -550,6 +616,59 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#94A3B8',
   },
+  sleepStageCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 16,
+  },
+  sleepHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sleepTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  sleepTotalText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#8B5CF6',
+  },
+  sleepBarContainer: {
+    flexDirection: 'row',
+    height: 14,
+    borderRadius: 7,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  sleepSegment: {
+    height: '100%',
+  },
+  sleepLegendRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  sleepLegendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  sleepDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  sleepLegendText: {
+    fontSize: 10,
+    color: '#64748B',
+    fontWeight: '600',
+  },
   metricsGrid: {
     flexDirection: 'row',
     gap: 10,
@@ -557,7 +676,7 @@ const styles = StyleSheet.create({
   metricCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -569,19 +688,24 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   metricLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  metricRowWithSpark: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   metricVal: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
     color: '#0F172A',
   },
   metricUnit: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   metricNote: {
     fontSize: 10,

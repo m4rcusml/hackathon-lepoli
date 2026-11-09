@@ -11,15 +11,17 @@ import {
   Activity,
   Heart,
   Moon,
-  AlertTriangle,
-  ChevronRight,
-  TrendingUp,
-  TrendingDown,
   ShieldAlert,
   ArrowRight,
+  TrendingUp,
+  TrendingDown,
+  Sparkles,
+  Info,
 } from 'lucide-react-native';
 import { useHealthStore } from '../store/useHealthStore';
 import { BiomarkerChart } from '../components/BiomarkerChart';
+import { ReadinessRing } from '../components/ReadinessRing';
+import { Sparkline } from '../components/Sparkline';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -32,8 +34,10 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
   const [selectedBiomarkerId, setSelectedBiomarkerId] = useState<string>('glicose');
   const [categoryFilter, setCategoryFilter] = useState<string>('Todos');
 
-  // Última leitura do wearable
   const latestWearable = wearables[wearables.length - 1];
+
+  // Cálculo dinâmico do Score de Prontidão (Oura/Apple Health style)
+  const readinessScore = isSimulatedAnomalyActive ? 52 : 78;
 
   // Agrupa os exames por biomarcador
   const groupedBiomarkers = Object.values(biomarkers).map((bm) => {
@@ -61,7 +65,6 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
     };
   });
 
-  // Filtragem por categoria
   const filteredBiomarkers = groupedBiomarkers.filter((item) => {
     if (categoryFilter === 'Todos') return true;
     if (categoryFilter === 'Alterados') return item.isOutOfRange;
@@ -72,29 +75,63 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
     (b) => b.definition.id === selectedBiomarkerId
   );
 
+  // Sparklines com dados dos últimos 7 dias
+  const last7DaysBpm = wearables.slice(-7).map((w) => w.restingHeartRate);
+  const last7DaysHrv = wearables.slice(-7).map((w) => w.hrv);
+  const last7DaysSleep = wearables.slice(-7).map((w) => w.sleepHours);
+
+  // Dados de correlação para teste (ex: cruzar com Frequência Cardíaca)
+  const correlationDataset = {
+    name: 'FC Repouso',
+    unit: 'BPM',
+    color: '#E11D48',
+    data: wearables.slice(-5).map((w) => ({
+      date: w.date,
+      value: w.restingHeartRate,
+    })),
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {/* Cabeçalho do Perfil */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Olá, {user.name} 👋</Text>
-          <Text style={styles.subGreeting}>
-            {user.age} anos • {user.biologicalSex} • Histórico Unificado
+      {/* 1. HERO: Anel de Prontidão Cardiovascular (Apple Health / Oura Ring style) */}
+      <View style={[styles.heroCard, isSimulatedAnomalyActive && styles.heroCardAlert]}>
+        <View style={styles.heroLeft}>
+          <View style={styles.userBadge}>
+            <Text style={styles.userBadgeText}>{user.name} • {user.age} anos</Text>
+          </View>
+          <Text style={styles.heroTitle}>
+            {isSimulatedAnomalyActive ? 'Atenção Cardíaca' : 'Prontidão Cardiovascular'}
           </Text>
+          <Text style={styles.heroSubtitle}>
+            {isSimulatedAnomalyActive
+              ? 'Arritmia noturna detectada com queda acentuada de recuperação fisiológica.'
+              : 'Seus sinais vitais e histórico metabólico estão em equilíbrio nos últimos 30 dias.'}
+          </Text>
+          <View style={styles.metricTags}>
+            <View style={styles.tagItem}>
+              <Text style={styles.tagLabel}>BPM Noturno:</Text>
+              <Text style={[styles.tagValue, isSimulatedAnomalyActive && { color: '#E11D48' }]}>
+                {latestWearable?.restingHeartRate} bpm
+              </Text>
+            </View>
+            <View style={styles.tagItem}>
+              <Text style={styles.tagLabel}>Sono Profundo:</Text>
+              <Text style={styles.tagValue}>{latestWearable?.deepSleepHours}h</Text>
+            </View>
+          </View>
         </View>
-        <View style={styles.healthBadge}>
-          <Text style={styles.healthBadgeText}>
-            {activeAlerts.length > 0 ? 'Atenção Requerida' : 'Sinais Estáveis'}
-          </Text>
+
+        <View style={styles.heroRight}>
+          <ReadinessRing score={readinessScore} isAnomaly={isSimulatedAnomalyActive} size={105} />
         </View>
       </View>
 
-      {/* Alerta Proativo em Destaque (RF-P04) */}
+      {/* 2. Alerta Proativo em Destaque (RF-P04) */}
       {activeAlerts.length > 0 && (
         <View style={styles.alertCard}>
           <View style={styles.alertHeader}>
             <View style={styles.alertIconWrapper}>
-              <ShieldAlert color="#DC2626" size={20} />
+              <ShieldAlert color="#E11D48" size={20} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.alertTitle}>{activeAlerts[0].title}</Text>
@@ -105,7 +142,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
           
           <View style={styles.alertDataBox}>
             <Text style={styles.alertDataText}>
-              <Text style={{ fontWeight: '700' }}>Detectado:</Text> {activeAlerts[0].valueDetected} (Seu habitual: {activeAlerts[0].baselineValue})
+              <Text style={{ fontWeight: '700' }}>Registrado:</Text> {activeAlerts[0].valueDetected} (Seu habitual: {activeAlerts[0].baselineValue})
             </Text>
           </View>
 
@@ -114,7 +151,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
               style={styles.alertPrimaryButton}
               onPress={() => onNavigateToTab('Assistente')}
             >
-              <Text style={styles.alertPrimaryButtonText}>Consultar Assistente IA</Text>
+              <Text style={styles.alertPrimaryButtonText}>Investigar no Chat IA</Text>
               <ArrowRight color="#FFFFFF" size={14} />
             </TouchableOpacity>
             <TouchableOpacity
@@ -127,9 +164,9 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
         </View>
       )}
 
-      {/* Cards de Sinais Vitais em Tempo Real (Wearables) */}
+      {/* 3. Cards de Sinais Vitais com Sparklines Integrados */}
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Sinais Vitais (Apple Watch)</Text>
+        <Text style={styles.sectionTitle}>Sinais Vitais (Últimos 7 dias)</Text>
         <TouchableOpacity onPress={() => onNavigateToTab('Dispositivos')}>
           <Text style={styles.sectionLink}>Ver detalhes</Text>
         </TouchableOpacity>
@@ -138,9 +175,17 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
       <View style={styles.vitalsRow}>
         {/* Card BPM */}
         <View style={[styles.vitalCard, isSimulatedAnomalyActive && styles.vitalCardAlert]}>
-          <View style={styles.vitalIconTitle}>
-            <Heart color={isSimulatedAnomalyActive ? '#DC2626' : '#EF4444'} size={18} />
-            <Text style={styles.vitalLabel}>Frequência</Text>
+          <View style={styles.vitalHeaderRow}>
+            <View style={styles.vitalIconTitle}>
+              <Heart color={isSimulatedAnomalyActive ? '#E11D48' : '#EF4444'} size={16} />
+              <Text style={styles.vitalLabel}>Frequência</Text>
+            </View>
+            <Sparkline
+              data={last7DaysBpm}
+              color={isSimulatedAnomalyActive ? '#E11D48' : '#EF4444'}
+              width={54}
+              height={22}
+            />
           </View>
           <Text style={[styles.vitalValue, isSimulatedAnomalyActive && styles.vitalValueAlert]}>
             {latestWearable?.restingHeartRate || 62}{' '}
@@ -153,9 +198,17 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
 
         {/* Card HRV */}
         <View style={[styles.vitalCard, isSimulatedAnomalyActive && styles.vitalCardAlert]}>
-          <View style={styles.vitalIconTitle}>
-            <Activity color={isSimulatedAnomalyActive ? '#EA580C' : '#3B82F6'} size={18} />
-            <Text style={styles.vitalLabel}>HRV (Stress)</Text>
+          <View style={styles.vitalHeaderRow}>
+            <View style={styles.vitalIconTitle}>
+              <Activity color={isSimulatedAnomalyActive ? '#EA580C' : '#3B82F6'} size={16} />
+              <Text style={styles.vitalLabel}>HRV</Text>
+            </View>
+            <Sparkline
+              data={last7DaysHrv}
+              color={isSimulatedAnomalyActive ? '#EA580C' : '#3B82F6'}
+              width={54}
+              height={22}
+            />
           </View>
           <Text style={styles.vitalValue}>
             {latestWearable?.hrv || 56}{' '}
@@ -168,9 +221,12 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
 
         {/* Card Sono */}
         <View style={styles.vitalCard}>
-          <View style={styles.vitalIconTitle}>
-            <Moon color="#8B5CF6" size={18} />
-            <Text style={styles.vitalLabel}>Sono</Text>
+          <View style={styles.vitalHeaderRow}>
+            <View style={styles.vitalIconTitle}>
+              <Moon color="#8B5CF6" size={16} />
+              <Text style={styles.vitalLabel}>Sono</Text>
+            </View>
+            <Sparkline data={last7DaysSleep} color="#8B5CF6" width={54} height={22} />
           </View>
           <Text style={styles.vitalValue}>
             {latestWearable?.sleepHours || 7.2}{' '}
@@ -182,11 +238,11 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
         </View>
       </View>
 
-      {/* Gráfico do Biomarcador Selecionado (Linha do Tempo com Faixas de Referência - RF-P02) */}
+      {/* 4. Gráfico do Biomarcador Selecionado com Seletores e Correlação (RF-P02) */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Evolução Histórica do Biomarcador</Text>
         <Text style={styles.sectionBadge}>
-          {activeBiomarkerData?.measurements.length || 0} exames registrados
+          {activeBiomarkerData?.measurements.length || 0} aferições
         </Text>
       </View>
 
@@ -222,54 +278,33 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
             </View>
           </View>
 
-          {/* Gráfico SVG com Faixa de Referência */}
+          {/* Componente BiomarkerChart Aprimorado com Tooltip e Correlação */}
           <BiomarkerChart
             data={activeBiomarkerData.measurements.map((m) => ({
               date: m.date,
               value: m.value,
+              labName: m.labName,
             }))}
             refMin={activeBiomarkerData.definition.refMin}
             refMax={activeBiomarkerData.definition.refMax}
             unit={activeBiomarkerData.definition.unit}
             lineColor="#0D9488"
             width={SCREEN_WIDTH - 64}
-            height={190}
+            height={200}
+            correlationData={
+              activeBiomarkerData.definition.id === 'ferritina' || activeBiomarkerData.definition.id === 'glicose'
+                ? correlationDataset
+                : undefined
+            }
           />
-
-          {/* Últimos registros do biomarcador selecionado */}
-          <View style={styles.historyList}>
-            <Text style={styles.historyListTitle}>Histórico de Coletas:</Text>
-            {activeBiomarkerData.measurements.map((m) => (
-              <View key={m.id} style={styles.historyItem}>
-                <View>
-                  <Text style={styles.historyLab}>{m.labName}</Text>
-                  <Text style={styles.historyDate}>{m.date}</Text>
-                </View>
-                <View style={{ alignItems: 'flex-end' }}>
-                  <Text
-                    style={[
-                      styles.historyValue,
-                      m.status !== 'normal' && styles.historyValueAlert,
-                    ]}
-                  >
-                    {m.value} {m.unit}
-                  </Text>
-                  <Text style={styles.historyRef}>
-                    Ref: {m.refMin}-{m.refMax}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
         </View>
       )}
 
-      {/* Lista de Biomarcadores Acompanhados */}
+      {/* 5. Lista de Biomarcadores com Filtros */}
       <View style={styles.sectionHeader}>
         <Text style={styles.sectionTitle}>Selecione para Inspecionar</Text>
       </View>
 
-      {/* Filtros em Chips */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterRow}>
         {['Todos', 'Alterados', 'Glicêmico', 'Lipídico', 'Hematológico', 'Hormonal'].map(
           (category) => (
@@ -294,7 +329,6 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
         )}
       </ScrollView>
 
-      {/* Cards da Lista de Biomarcadores */}
       <View style={styles.biomarkerGrid}>
         {filteredBiomarkers.map((item) => {
           const isSelected = item.definition.id === selectedBiomarkerId;
@@ -334,7 +368,7 @@ export const TimelineScreen: React.FC<TimelineScreenProps> = ({ onNavigateToTab 
                         </Text>
                       </Text>
                       <View style={styles.biomarkerTrendBox}>
-                        {item.trend === 'up' && <TrendingUp size={12} color="#DC2626" />}
+                        {item.trend === 'up' && <TrendingUp size={12} color="#E11D48" />}
                         {item.trend === 'down' && <TrendingDown size={12} color="#10B981" />}
                         <Text style={styles.biomarkerDateText}>{item.latest.date}</Text>
                       </View>
@@ -361,46 +395,83 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 32,
   },
-  header: {
+  heroCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    paddingTop: 8,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    marginBottom: 18,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  greeting: {
-    fontSize: 22,
+  heroCardAlert: {
+    borderColor: '#FECDD3',
+    backgroundColor: '#FFF1F2',
+  },
+  heroLeft: {
+    flex: 1,
+    paddingRight: 10,
+  },
+  heroRight: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  userBadge: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginBottom: 6,
+  },
+  userBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  heroTitle: {
+    fontSize: 17,
+    fontWeight: '900',
+    color: '#0F172A',
+    marginBottom: 4,
+  },
+  heroSubtitle: {
+    fontSize: 11,
+    color: '#64748B',
+    lineHeight: 15,
+    marginBottom: 10,
+  },
+  metricTags: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  tagItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  tagLabel: {
+    fontSize: 10,
+    color: '#94A3B8',
+  },
+  tagValue: {
+    fontSize: 11,
     fontWeight: '800',
     color: '#0F172A',
   },
-  subGreeting: {
-    fontSize: 13,
-    color: '#64748B',
-    marginTop: 2,
-  },
-  healthBadge: {
-    backgroundColor: '#E0F2FE',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  healthBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#0284C7',
-  },
   alertCard: {
-    backgroundColor: '#FEF2F2',
+    backgroundColor: '#FFF1F2',
     borderWidth: 1.5,
-    borderColor: '#FECACA',
-    borderRadius: 16,
+    borderColor: '#FECDD3',
+    borderRadius: 18,
     padding: 16,
-    marginBottom: 20,
-    shadowColor: '#DC2626',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    elevation: 3,
+    marginBottom: 18,
   },
   alertHeader: {
     flexDirection: 'row',
@@ -409,23 +480,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   alertIconWrapper: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#FFE4E6',
     padding: 8,
     borderRadius: 10,
   },
   alertTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
-    color: '#991B1B',
+    color: '#BE123C',
   },
   alertTimestamp: {
-    fontSize: 11,
-    color: '#DC2626',
+    fontSize: 10,
+    color: '#E11D48',
   },
   alertDescription: {
-    fontSize: 13,
-    color: '#7F1D1D',
-    lineHeight: 18,
+    fontSize: 12,
+    color: '#881337',
+    lineHeight: 17,
     marginBottom: 10,
   },
   alertDataBox: {
@@ -435,8 +506,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   alertDataText: {
-    fontSize: 12,
-    color: '#991B1B',
+    fontSize: 11,
+    color: '#9F1239',
   },
   alertActions: {
     flexDirection: 'row',
@@ -445,8 +516,8 @@ const styles = StyleSheet.create({
   alertPrimaryButton: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#DC2626',
-    paddingVertical: 9,
+    backgroundColor: '#E11D48',
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
     justifyContent: 'center',
@@ -461,97 +532,102 @@ const styles = StyleSheet.create({
   alertSecondaryButton: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
-    borderColor: '#FECACA',
-    paddingVertical: 9,
+    borderColor: '#FECDD3',
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
   alertSecondaryButtonText: {
-    color: '#991B1B',
-    fontWeight: '600',
-    fontSize: 12,
+    color: '#BE123C',
+    fontWeight: '700',
+    fontSize: 11,
   },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 6,
     marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     color: '#1E293B',
   },
   sectionLink: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#0D9488',
   },
   sectionBadge: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#64748B',
   },
   vitalsRow: {
     flexDirection: 'row',
     gap: 10,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   vitalCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 12,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
   vitalCardAlert: {
-    borderColor: '#FCA5A5',
+    borderColor: '#FECDD3',
     backgroundColor: '#FFF1F2',
+  },
+  vitalHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   vitalIconTitle: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 6,
+    gap: 4,
   },
   vitalLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
-    fontWeight: '600',
+    fontWeight: '700',
   },
   vitalValue: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 17,
+    fontWeight: '900',
     color: '#0F172A',
   },
   vitalValueAlert: {
-    color: '#DC2626',
+    color: '#E11D48',
   },
   vitalUnit: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
     color: '#64748B',
   },
   vitalSub: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#94A3B8',
-    marginTop: 4,
+    marginTop: 2,
   },
   chartCard: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
+    borderRadius: 20,
     padding: 16,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginBottom: 20,
+    marginBottom: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
     elevation: 2,
   },
   chartCardHeader: {
@@ -561,8 +637,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   chartBiomarkerName: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 15,
+    fontWeight: '800',
     color: '#0F172A',
   },
   chartBiomarkerDesc: {
@@ -577,59 +653,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   statusBadgeSuccess: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: '#ECFDF5',
   },
   statusBadgeWarning: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#FFF1F2',
   },
   statusBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '800',
   },
   statusBadgeTextSuccess: {
-    color: '#15803D',
+    color: '#047857',
   },
   statusBadgeTextWarning: {
-    color: '#B91C1C',
-  },
-  historyList: {
-    marginTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 10,
-  },
-  historyListTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#475569',
-    marginBottom: 6,
-  },
-  historyItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 5,
-  },
-  historyLab: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#1E293B',
-  },
-  historyDate: {
-    fontSize: 10,
-    color: '#94A3B8',
-  },
-  historyValue: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#0F172A',
-  },
-  historyValueAlert: {
-    color: '#DC2626',
-  },
-  historyRef: {
-    fontSize: 10,
-    color: '#64748B',
+    color: '#BE123C',
   },
   filterRow: {
     flexDirection: 'row',
@@ -646,8 +683,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#0D9488',
   },
   filterChipText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
     color: '#64748B',
   },
   filterChipTextActive: {
@@ -669,7 +706,7 @@ const styles = StyleSheet.create({
   },
   biomarkerRowCardOutOfRange: {
     borderLeftWidth: 4,
-    borderLeftColor: '#EF4444',
+    borderLeftColor: '#E11D48',
   },
   biomarkerRowMain: {
     flexDirection: 'row',
@@ -677,12 +714,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   biomarkerRowTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#0F172A',
   },
   biomarkerRowCategory: {
-    fontSize: 11,
+    fontSize: 10,
     color: '#64748B',
     marginTop: 2,
   },
@@ -690,16 +727,16 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   biomarkerValueText: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '900',
     color: '#0F172A',
   },
   biomarkerValueTextAlert: {
-    color: '#DC2626',
+    color: '#E11D48',
   },
   biomarkerUnitText: {
-    fontSize: 11,
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '600',
     color: '#64748B',
   },
   biomarkerTrendBox: {
@@ -709,11 +746,11 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   biomarkerDateText: {
-    fontSize: 10,
+    fontSize: 9,
     color: '#94A3B8',
   },
   noDataText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#94A3B8',
   },
 });
