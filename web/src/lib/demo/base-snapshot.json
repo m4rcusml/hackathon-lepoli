@@ -1,0 +1,208 @@
+{
+  "id": "snap-demo-1",
+  "patientId": "usr-dan-2026",
+  "createdAt": "2026-11-11T15:00:00Z",
+  "dataRevision": "rev-demo-1",
+  "accessRevision": "access-demo-1",
+  "updateHighWatermark": "cursor-demo-high-1",
+  "access": {
+    "kind": "continuous",
+    "contextId": "grant-demo-dan",
+    "patientId": "usr-dan-2026",
+    "grantId": "grant-demo-dan",
+    "scopeVersion": "scope-demo-1",
+    "scopes": [
+      "read_clinical_context",
+      "read_exams",
+      "read_wearables",
+      "read_alerts",
+      "read_graphrag_briefing"
+    ],
+    "expiresAt": "2026-12-11T15:00:00Z",
+    "readOnly": true
+  },
+  "patient": {
+    "id": "usr-dan-2026",
+    "displayName": "Daniel Vaz",
+    "age": 32,
+    "biologicalSex": "Masculino",
+    "disambiguationLabel": "Paciente demonstrativo"
+  },
+  "coverage": {
+    "from": "2025-10-18",
+    "to": "2025-10-18",
+    "truncated": false
+  },
+  "review": {
+    "lastReviewedCursor": null,
+    "lastReviewedAt": null,
+    "mode": "initial_review",
+    "unreadGroupCount": null
+  },
+  "sources": [
+    {
+      "id": "src-fleury",
+      "label": "Fleury Medicina e Saúde",
+      "kind": "laboratory",
+      "state": "unknown",
+      "lastSyncedAt": "2026-11-11T14:30:00Z",
+      "lastEventDate": "2025-10-18",
+      "coverage": {
+        "from": "2025-10-18",
+        "to": "2025-10-18",
+        "truncated": false
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ex-fer-2025",
+      "version": "1",
+      "kind": "lab_result",
+      "label": "Ferritina Sérica",
+      "occurredOn": "2025-10-18",
+      "occurredAt": null,
+      "ingestedAt": "2026-11-11T14:30:00Z",
+      "sourceId": "src-fleury",
+      "documentId": "doc-fleury-2025",
+      "provenance": "extracted",
+      "value": 22,
+      "unit": "ng/mL",
+      "referenceRange": {
+        "min": 30,
+        "max": 400,
+        "text": null
+      },
+      "text": null,
+      "status": "attention",
+      "supersedes": null
+    }
+  ],
+  "clinicalContext": {
+    "state": "empty",
+    "items": [],
+    "reasonCode": null
+  },
+  "exams": {
+    "state": "available",
+    "items": [
+      {
+        "id": "ferritina",
+        "label": "Ferritina Sérica",
+        "canonicalUnit": "ng/mL",
+        "measurementRefs": [
+          {
+            "id": "ex-fer-2025",
+            "version": "1"
+          }
+        ]
+      }
+    ],
+    "reasonCode": null
+  },
+  "wearables": {
+    "state": "empty",
+    "items": [],
+    "reasonCode": null
+  },
+  "alerts": {
+    "state": "empty",
+    "items": [],
+    "reasonCode": null
+  },
+  "briefing": {
+    "state": "available",
+    "items": [
+      {
+        "id": "finding-fer-demo",
+        "title": "Ferritina abaixo da referência do laudo",
+        "text": "Resultado de 22 ng/mL no exame de 18/10/2025; referência registrada: 30–400 ng/mL.",
+        "basis": "recorded_fact",
+        "evidenceRefs": [
+          {
+            "id": "ex-fer-2025",
+            "version": "1"
+          }
+        ]
+      }
+    ],
+    "reasonCode": null
+  },
+  "documents": {
+    "state": "available",
+    "items": [
+      {
+        "id": "doc-fleury-2025",
+        "title": "Laudo Fleury — outubro/2025",
+        "sourceId": "src-fleury",
+        "occurredOn": "2025-10-18",
+        "receivedAt": "2026-11-11T14:30:00Z",
+        "mimeType": "application/pdf",
+        "originalAvailable": false,
+        "evidenceRefs": [
+          {
+            "id": "ex-fer-2025",
+            "version": "1"
+          }
+        ]
+      }
+    ],
+    "reasonCode": null
+  },
+  "timeline": [
+    {
+      "id": "event-fleury-2025",
+      "groupId": "doc-fleury-2025",
+      "kind": "document",
+      "label": "Laudo laboratorial Fleury",
+      "occurredOn": "2025-10-18",
+      "occurredAt": null,
+      "receivedAt": "2026-11-11T14:30:00Z",
+      "evidenceRefs": [
+        {
+          "id": "ex-fer-2025",
+          "version": "1"
+        }
+      ],
+      "documentId": "doc-fleury-2025"
+    }
+  ],
+  "graph": {
+    "state": "available",
+    "nodes": [
+      {
+        "id": "node-dan",
+        "kind": "patient",
+        "label": "Daniel Vaz",
+        "evidenceRefs": []
+      },
+      {
+        "id": "node-fer",
+        "kind": "biomarker",
+        "label": "Ferritina: 22 ng/mL",
+        "evidenceRefs": [
+          {
+            "id": "ex-fer-2025",
+            "version": "1"
+          }
+        ]
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-dan-fer",
+        "source": "node-dan",
+        "target": "node-fer",
+        "label": "Resultado laboratorial registrado",
+        "basis": "recorded_fact",
+        "evidenceRefs": [
+          {
+            "id": "ex-fer-2025",
+            "version": "1"
+          }
+        ]
+      }
+    ],
+    "reasonCode": null
+  }
+}

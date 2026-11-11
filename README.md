@@ -2,6 +2,10 @@
 
 Uma plataforma inteligente que unifica o histórico de saúde de cada pessoa — desde exames em papel de dez anos atrás até dados em tempo real gerados por wearables — estruturando o contexto clínico em uma arquitetura **Hybrid GraphRAG + Time-Series** para empoderar tanto o paciente quanto o médico.
 
+Documentação da frente web do médico: [contexto do produto](PRODUCT.md), [experiência e carteira contínua](doctor-web-development-plan.md) e [plano de implementação](docs/doctor-web-implementation-plan.md). O [contrato backend](docs/doctor-backend-contract.md), com [OpenAPI](docs/contracts/doctor-api.v0.1.openapi.json), é um **rascunho temporário para planejar web + integração**, ainda não aprovado pelo backend; não representa endpoints existentes.
+
+A aplicação do médico está em [`web/`](web/README.md). Consulte instalação, modos real/demo e checks no README da web, e os resultados e pendências no [registro da implementação](docs/doctor-web-delivery.md).
+
 ---
 
 ## O Problema
