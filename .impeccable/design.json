@@ -1,0 +1,858 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-11T16:04:06.413Z",
+  "title": "Design System: Rivio · Espaço do médico",
+  "extensions": {
+    "colorMeta": {
+      "teal": {
+        "role": "primary",
+        "displayName": "Teal Rivio",
+        "tonalRamp": [
+          "oklch(15.00% 0.09108 185.89)",
+          "oklch(26.43% 0.09108 185.89)",
+          "oklch(37.86% 0.09108 185.89)",
+          "oklch(49.29% 0.09108 185.89)",
+          "oklch(60.71% 0.09108 185.89)",
+          "oklch(72.14% 0.09108 185.89)",
+          "oklch(83.57% 0.09108 185.89)",
+          "oklch(95.00% 0.09108 185.89)"
+        ]
+      },
+      "teal-dark": {
+        "role": "primary",
+        "displayName": "Teal profundo",
+        "tonalRamp": [
+          "oklch(15.00% 0.07353 188.39)",
+          "oklch(26.43% 0.07353 188.39)",
+          "oklch(37.86% 0.07353 188.39)",
+          "oklch(49.29% 0.07353 188.39)",
+          "oklch(60.71% 0.07353 188.39)",
+          "oklch(72.14% 0.07353 188.39)",
+          "oklch(83.57% 0.07353 188.39)",
+          "oklch(95.00% 0.07353 188.39)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Fundo clínico claro",
+        "tonalRamp": [
+          "oklch(15.00% 0.00425 197.09)",
+          "oklch(26.43% 0.00425 197.09)",
+          "oklch(37.86% 0.00425 197.09)",
+          "oklch(49.29% 0.00425 197.09)",
+          "oklch(60.71% 0.00425 197.09)",
+          "oklch(72.14% 0.00425 197.09)",
+          "oklch(83.57% 0.00425 197.09)",
+          "oklch(95.00% 0.00425 197.09)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Texto profundo",
+        "tonalRamp": [
+          "oklch(15.00% 0.03491 210.64)",
+          "oklch(26.43% 0.03491 210.64)",
+          "oklch(37.86% 0.03491 210.64)",
+          "oklch(49.29% 0.03491 210.64)",
+          "oklch(60.71% 0.03491 210.64)",
+          "oklch(72.14% 0.03491 210.64)",
+          "oklch(83.57% 0.03491 210.64)",
+          "oklch(95.00% 0.03491 210.64)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Texto secundário",
+        "tonalRamp": [
+          "oklch(15.00% 0.02969 218.35)",
+          "oklch(26.43% 0.02969 218.35)",
+          "oklch(37.86% 0.02969 218.35)",
+          "oklch(49.29% 0.02969 218.35)",
+          "oklch(60.71% 0.02969 218.35)",
+          "oklch(72.14% 0.02969 218.35)",
+          "oklch(83.57% 0.02969 218.35)",
+          "oklch(95.00% 0.02969 218.35)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Contorno global",
+        "tonalRamp": [
+          "oklch(15.00% 0.01318 208.76)",
+          "oklch(26.43% 0.01318 208.76)",
+          "oklch(37.86% 0.01318 208.76)",
+          "oklch(49.29% 0.01318 208.76)",
+          "oklch(60.71% 0.01318 208.76)",
+          "oklch(72.14% 0.01318 208.76)",
+          "oklch(83.57% 0.01318 208.76)",
+          "oklch(95.00% 0.01318 208.76)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Superfície branca",
+        "tonalRamp": [
+          "oklch(15.00% 0.00000 0.00)",
+          "oklch(26.43% 0.00000 0.00)",
+          "oklch(37.86% 0.00000 0.00)",
+          "oklch(49.29% 0.00000 0.00)",
+          "oklch(60.71% 0.00000 0.00)",
+          "oklch(72.14% 0.00000 0.00)",
+          "oklch(83.57% 0.00000 0.00)",
+          "oklch(95.00% 0.00000 0.00)"
+        ]
+      },
+      "rail": {
+        "role": "primary",
+        "displayName": "Teal de navegação",
+        "tonalRamp": [
+          "oklch(15.00% 0.05299 194.90)",
+          "oklch(26.43% 0.05299 194.90)",
+          "oklch(37.86% 0.05299 194.90)",
+          "oklch(49.29% 0.05299 194.90)",
+          "oklch(60.71% 0.05299 194.90)",
+          "oklch(72.14% 0.05299 194.90)",
+          "oklch(83.57% 0.05299 194.90)",
+          "oklch(95.00% 0.05299 194.90)"
+        ]
+      },
+      "rail-text": {
+        "role": "neutral",
+        "displayName": "Texto da navegação",
+        "tonalRamp": [
+          "oklch(15.00% 0.01634 182.71)",
+          "oklch(26.43% 0.01634 182.71)",
+          "oklch(37.86% 0.01634 182.71)",
+          "oklch(49.29% 0.01634 182.71)",
+          "oklch(60.71% 0.01634 182.71)",
+          "oklch(72.14% 0.01634 182.71)",
+          "oklch(83.57% 0.01634 182.71)",
+          "oklch(95.00% 0.01634 182.71)"
+        ]
+      },
+      "rail-selected": {
+        "role": "primary",
+        "displayName": "Navegação selecionada",
+        "tonalRamp": [
+          "oklch(15.00% 0.06385 186.21)",
+          "oklch(26.43% 0.06385 186.21)",
+          "oklch(37.86% 0.06385 186.21)",
+          "oklch(49.29% 0.06385 186.21)",
+          "oklch(60.71% 0.06385 186.21)",
+          "oklch(72.14% 0.06385 186.21)",
+          "oklch(83.57% 0.06385 186.21)",
+          "oklch(95.00% 0.06385 186.21)"
+        ]
+      },
+      "rail-hover": {
+        "role": "primary",
+        "displayName": "Navegação em hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.06096 191.86)",
+          "oklch(26.43% 0.06096 191.86)",
+          "oklch(37.86% 0.06096 191.86)",
+          "oklch(49.29% 0.06096 191.86)",
+          "oklch(60.71% 0.06096 191.86)",
+          "oklch(72.14% 0.06096 191.86)",
+          "oklch(83.57% 0.06096 191.86)",
+          "oklch(95.00% 0.06096 191.86)"
+        ]
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Contorno de campo",
+        "tonalRamp": [
+          "oklch(15.00% 0.02187 204.01)",
+          "oklch(26.43% 0.02187 204.01)",
+          "oklch(37.86% 0.02187 204.01)",
+          "oklch(49.29% 0.02187 204.01)",
+          "oklch(60.71% 0.02187 204.01)",
+          "oklch(72.14% 0.02187 204.01)",
+          "oklch(83.57% 0.02187 204.01)",
+          "oklch(95.00% 0.02187 204.01)"
+        ]
+      },
+      "secondary-border": {
+        "role": "neutral",
+        "displayName": "Contorno secundário",
+        "tonalRamp": [
+          "oklch(15.00% 0.01831 201.09)",
+          "oklch(26.43% 0.01831 201.09)",
+          "oklch(37.86% 0.01831 201.09)",
+          "oklch(49.29% 0.01831 201.09)",
+          "oklch(60.71% 0.01831 201.09)",
+          "oklch(72.14% 0.01831 201.09)",
+          "oklch(83.57% 0.01831 201.09)",
+          "oklch(95.00% 0.01831 201.09)"
+        ]
+      },
+      "secondary-hover": {
+        "role": "neutral",
+        "displayName": "Hover secundário",
+        "tonalRamp": [
+          "oklch(15.00% 0.01093 182.87)",
+          "oklch(26.43% 0.01093 182.87)",
+          "oklch(37.86% 0.01093 182.87)",
+          "oklch(49.29% 0.01093 182.87)",
+          "oklch(60.71% 0.01093 182.87)",
+          "oklch(72.14% 0.01093 182.87)",
+          "oklch(83.57% 0.01093 182.87)",
+          "oklch(95.00% 0.01093 182.87)"
+        ]
+      },
+      "focus": {
+        "role": "secondary",
+        "displayName": "Foco de teclado",
+        "tonalRamp": [
+          "oklch(15.00% 0.12461 243.79)",
+          "oklch(26.43% 0.12461 243.79)",
+          "oklch(37.86% 0.12461 243.79)",
+          "oklch(49.29% 0.12461 243.79)",
+          "oklch(60.71% 0.12461 243.79)",
+          "oklch(72.14% 0.12461 243.79)",
+          "oklch(83.57% 0.12461 243.79)",
+          "oklch(95.00% 0.12461 243.79)"
+        ]
+      },
+      "slate-text": {
+        "role": "neutral",
+        "displayName": "Texto slate",
+        "tonalRamp": [
+          "oklch(15.00% 0.03982 265.75)",
+          "oklch(26.43% 0.03982 265.75)",
+          "oklch(37.86% 0.03982 265.75)",
+          "oklch(49.29% 0.03982 265.75)",
+          "oklch(60.71% 0.03982 265.75)",
+          "oklch(72.14% 0.03982 265.75)",
+          "oklch(83.57% 0.03982 265.75)",
+          "oklch(95.00% 0.03982 265.75)"
+        ]
+      },
+      "slate-muted": {
+        "role": "neutral",
+        "displayName": "Metadado slate",
+        "tonalRamp": [
+          "oklch(15.00% 0.03745 257.28)",
+          "oklch(26.43% 0.03745 257.28)",
+          "oklch(37.86% 0.03745 257.28)",
+          "oklch(49.29% 0.03745 257.28)",
+          "oklch(60.71% 0.03745 257.28)",
+          "oklch(72.14% 0.03745 257.28)",
+          "oklch(83.57% 0.03745 257.28)",
+          "oklch(95.00% 0.03745 257.28)"
+        ]
+      },
+      "slate-border": {
+        "role": "neutral",
+        "displayName": "Divisor slate",
+        "tonalRamp": [
+          "oklch(15.00% 0.01262 255.51)",
+          "oklch(26.43% 0.01262 255.51)",
+          "oklch(37.86% 0.01262 255.51)",
+          "oklch(49.29% 0.01262 255.51)",
+          "oklch(60.71% 0.01262 255.51)",
+          "oklch(72.14% 0.01262 255.51)",
+          "oklch(83.57% 0.01262 255.51)",
+          "oklch(95.00% 0.01262 255.51)"
+        ]
+      },
+      "slate-contour": {
+        "role": "neutral",
+        "displayName": "Contorno slate",
+        "tonalRamp": [
+          "oklch(15.00% 0.01985 252.89)",
+          "oklch(26.43% 0.01985 252.89)",
+          "oklch(37.86% 0.01985 252.89)",
+          "oklch(49.29% 0.01985 252.89)",
+          "oklch(60.71% 0.01985 252.89)",
+          "oklch(72.14% 0.01985 252.89)",
+          "oklch(83.57% 0.01985 252.89)",
+          "oklch(95.00% 0.01985 252.89)"
+        ]
+      },
+      "slate-subtle": {
+        "role": "neutral",
+        "displayName": "Fundo slate sutil",
+        "tonalRamp": [
+          "oklch(15.00% 0.00341 247.86)",
+          "oklch(26.43% 0.00341 247.86)",
+          "oklch(37.86% 0.00341 247.86)",
+          "oklch(49.29% 0.00341 247.86)",
+          "oklch(60.71% 0.00341 247.86)",
+          "oklch(72.14% 0.00341 247.86)",
+          "oklch(83.57% 0.00341 247.86)",
+          "oklch(95.00% 0.00341 247.86)"
+        ]
+      },
+      "slate-surface": {
+        "role": "neutral",
+        "displayName": "Superfície slate",
+        "tonalRamp": [
+          "oklch(15.00% 0.00685 247.90)",
+          "oklch(26.43% 0.00685 247.90)",
+          "oklch(37.86% 0.00685 247.90)",
+          "oklch(49.29% 0.00685 247.90)",
+          "oklch(60.71% 0.00685 247.90)",
+          "oklch(72.14% 0.00685 247.90)",
+          "oklch(83.57% 0.00685 247.90)",
+          "oklch(95.00% 0.00685 247.90)"
+        ]
+      },
+      "clinical-teal": {
+        "role": "primary",
+        "displayName": "Teal clínico",
+        "tonalRamp": [
+          "oklch(15.00% 0.08606 186.39)",
+          "oklch(26.43% 0.08606 186.39)",
+          "oklch(37.86% 0.08606 186.39)",
+          "oklch(49.29% 0.08606 186.39)",
+          "oklch(60.71% 0.08606 186.39)",
+          "oklch(72.14% 0.08606 186.39)",
+          "oklch(83.57% 0.08606 186.39)",
+          "oklch(95.00% 0.08606 186.39)"
+        ]
+      },
+      "clinical-teal-dark": {
+        "role": "primary",
+        "displayName": "Teal de medição",
+        "tonalRamp": [
+          "oklch(15.00% 0.07052 188.22)",
+          "oklch(26.43% 0.07052 188.22)",
+          "oklch(37.86% 0.07052 188.22)",
+          "oklch(49.29% 0.07052 188.22)",
+          "oklch(60.71% 0.07052 188.22)",
+          "oklch(72.14% 0.07052 188.22)",
+          "oklch(83.57% 0.07052 188.22)",
+          "oklch(95.00% 0.07052 188.22)"
+        ]
+      },
+      "clinical-tint": {
+        "role": "primary",
+        "displayName": "Superfície clínica selecionada",
+        "tonalRamp": [
+          "oklch(15.00% 0.01420 180.72)",
+          "oklch(26.43% 0.01420 180.72)",
+          "oklch(37.86% 0.01420 180.72)",
+          "oklch(49.29% 0.01420 180.72)",
+          "oklch(60.71% 0.01420 180.72)",
+          "oklch(72.14% 0.01420 180.72)",
+          "oklch(83.57% 0.01420 180.72)",
+          "oklch(95.00% 0.01420 180.72)"
+        ]
+      },
+      "clinical-border": {
+        "role": "primary",
+        "displayName": "Contorno clínico selecionado",
+        "tonalRamp": [
+          "oklch(15.00% 0.09270 180.43)",
+          "oklch(26.43% 0.09270 180.43)",
+          "oklch(37.86% 0.09270 180.43)",
+          "oklch(49.29% 0.09270 180.43)",
+          "oklch(60.71% 0.09270 180.43)",
+          "oklch(72.14% 0.09270 180.43)",
+          "oklch(83.57% 0.09270 180.43)",
+          "oklch(95.00% 0.09270 180.43)"
+        ]
+      },
+      "clinical-highlight": {
+        "role": "primary",
+        "displayName": "Faixa e avatar clínicos",
+        "tonalRamp": [
+          "oklch(15.00% 0.04980 180.80)",
+          "oklch(26.43% 0.04980 180.80)",
+          "oklch(37.86% 0.04980 180.80)",
+          "oklch(49.29% 0.04980 180.80)",
+          "oklch(60.71% 0.04980 180.80)",
+          "oklch(72.14% 0.04980 180.80)",
+          "oklch(83.57% 0.04980 180.80)",
+          "oklch(95.00% 0.04980 180.80)"
+        ]
+      },
+      "badge-positive-bg": {
+        "role": "primary",
+        "displayName": "Fundo de estado positivo",
+        "tonalRamp": [
+          "oklch(15.00% 0.01179 170.27)",
+          "oklch(26.43% 0.01179 170.27)",
+          "oklch(37.86% 0.01179 170.27)",
+          "oklch(49.29% 0.01179 170.27)",
+          "oklch(60.71% 0.01179 170.27)",
+          "oklch(72.14% 0.01179 170.27)",
+          "oklch(83.57% 0.01179 170.27)",
+          "oklch(95.00% 0.01179 170.27)"
+        ]
+      },
+      "badge-positive-text": {
+        "role": "primary",
+        "displayName": "Texto de estado positivo",
+        "tonalRamp": [
+          "oklch(15.00% 0.06696 179.18)",
+          "oklch(26.43% 0.06696 179.18)",
+          "oklch(37.86% 0.06696 179.18)",
+          "oklch(49.29% 0.06696 179.18)",
+          "oklch(60.71% 0.06696 179.18)",
+          "oklch(72.14% 0.06696 179.18)",
+          "oklch(83.57% 0.06696 179.18)",
+          "oklch(95.00% 0.06696 179.18)"
+        ]
+      },
+      "badge-positive-border": {
+        "role": "primary",
+        "displayName": "Contorno de estado positivo",
+        "tonalRamp": [
+          "oklch(15.00% 0.03017 178.25)",
+          "oklch(26.43% 0.03017 178.25)",
+          "oklch(37.86% 0.03017 178.25)",
+          "oklch(49.29% 0.03017 178.25)",
+          "oklch(60.71% 0.03017 178.25)",
+          "oklch(72.14% 0.03017 178.25)",
+          "oklch(83.57% 0.03017 178.25)",
+          "oklch(95.00% 0.03017 178.25)"
+        ]
+      },
+      "badge-warning-bg": {
+        "role": "secondary",
+        "displayName": "Fundo de estado de atenção",
+        "tonalRamp": [
+          "oklch(15.00% 0.02393 85.79)",
+          "oklch(26.43% 0.02393 85.79)",
+          "oklch(37.86% 0.02393 85.79)",
+          "oklch(49.29% 0.02393 85.79)",
+          "oklch(60.71% 0.02393 85.79)",
+          "oklch(72.14% 0.02393 85.79)",
+          "oklch(83.57% 0.02393 85.79)",
+          "oklch(95.00% 0.02393 85.79)"
+        ]
+      },
+      "badge-warning-text": {
+        "role": "secondary",
+        "displayName": "Texto de estado de atenção",
+        "tonalRamp": [
+          "oklch(15.00% 0.09833 70.17)",
+          "oklch(26.43% 0.09833 70.17)",
+          "oklch(37.86% 0.09833 70.17)",
+          "oklch(49.29% 0.09833 70.17)",
+          "oklch(60.71% 0.09833 70.17)",
+          "oklch(72.14% 0.09833 70.17)",
+          "oklch(83.57% 0.09833 70.17)",
+          "oklch(95.00% 0.09833 70.17)"
+        ]
+      },
+      "badge-warning-border": {
+        "role": "secondary",
+        "displayName": "Contorno de estado de atenção",
+        "tonalRamp": [
+          "oklch(15.00% 0.06415 87.25)",
+          "oklch(26.43% 0.06415 87.25)",
+          "oklch(37.86% 0.06415 87.25)",
+          "oklch(49.29% 0.06415 87.25)",
+          "oklch(60.71% 0.06415 87.25)",
+          "oklch(72.14% 0.06415 87.25)",
+          "oklch(83.57% 0.06415 87.25)",
+          "oklch(95.00% 0.06415 87.25)"
+        ]
+      },
+      "badge-neutral-bg": {
+        "role": "neutral",
+        "displayName": "Fundo de estado neutro",
+        "tonalRamp": [
+          "oklch(15.00% 0.00505 228.82)",
+          "oklch(26.43% 0.00505 228.82)",
+          "oklch(37.86% 0.00505 228.82)",
+          "oklch(49.29% 0.00505 228.82)",
+          "oklch(60.71% 0.00505 228.82)",
+          "oklch(72.14% 0.00505 228.82)",
+          "oklch(83.57% 0.00505 228.82)",
+          "oklch(95.00% 0.00505 228.82)"
+        ]
+      },
+      "badge-neutral-text": {
+        "role": "neutral",
+        "displayName": "Texto de estado neutro",
+        "tonalRamp": [
+          "oklch(15.00% 0.03606 222.89)",
+          "oklch(26.43% 0.03606 222.89)",
+          "oklch(37.86% 0.03606 222.89)",
+          "oklch(49.29% 0.03606 222.89)",
+          "oklch(60.71% 0.03606 222.89)",
+          "oklch(72.14% 0.03606 222.89)",
+          "oklch(83.57% 0.03606 222.89)",
+          "oklch(95.00% 0.03606 222.89)"
+        ]
+      },
+      "badge-neutral-border": {
+        "role": "neutral",
+        "displayName": "Contorno de estado neutro",
+        "tonalRamp": [
+          "oklch(15.00% 0.01370 226.57)",
+          "oklch(26.43% 0.01370 226.57)",
+          "oklch(37.86% 0.01370 226.57)",
+          "oklch(49.29% 0.01370 226.57)",
+          "oklch(60.71% 0.01370 226.57)",
+          "oklch(72.14% 0.01370 226.57)",
+          "oklch(83.57% 0.01370 226.57)",
+          "oklch(95.00% 0.01370 226.57)"
+        ]
+      },
+      "attention-bg": {
+        "role": "secondary",
+        "displayName": "Fundo de atenção na série",
+        "tonalRamp": [
+          "oklch(15.00% 0.02140 95.28)",
+          "oklch(26.43% 0.02140 95.28)",
+          "oklch(37.86% 0.02140 95.28)",
+          "oklch(49.29% 0.02140 95.28)",
+          "oklch(60.71% 0.02140 95.28)",
+          "oklch(72.14% 0.02140 95.28)",
+          "oklch(83.57% 0.02140 95.28)",
+          "oklch(95.00% 0.02140 95.28)"
+        ]
+      },
+      "attention-text": {
+        "role": "secondary",
+        "displayName": "Texto de atenção na série",
+        "tonalRamp": [
+          "oklch(15.00% 0.12470 46.20)",
+          "oklch(26.43% 0.12470 46.20)",
+          "oklch(37.86% 0.12470 46.20)",
+          "oklch(49.29% 0.12470 46.20)",
+          "oklch(60.71% 0.12470 46.20)",
+          "oklch(72.14% 0.12470 46.20)",
+          "oklch(83.57% 0.12470 46.20)",
+          "oklch(95.00% 0.12470 46.20)"
+        ]
+      },
+      "critical-bg": {
+        "role": "secondary",
+        "displayName": "Fundo crítico na série",
+        "tonalRamp": [
+          "oklch(15.00% 0.01517 12.42)",
+          "oklch(26.43% 0.01517 12.42)",
+          "oklch(37.86% 0.01517 12.42)",
+          "oklch(49.29% 0.01517 12.42)",
+          "oklch(60.71% 0.01517 12.42)",
+          "oklch(72.14% 0.01517 12.42)",
+          "oklch(83.57% 0.01517 12.42)",
+          "oklch(95.00% 0.01517 12.42)"
+        ]
+      },
+      "critical-text": {
+        "role": "secondary",
+        "displayName": "Texto crítico na série",
+        "tonalRamp": [
+          "oklch(15.00% 0.17128 13.70)",
+          "oklch(26.43% 0.17128 13.70)",
+          "oklch(37.86% 0.17128 13.70)",
+          "oklch(49.29% 0.17128 13.70)",
+          "oklch(60.71% 0.17128 13.70)",
+          "oklch(72.14% 0.17128 13.70)",
+          "oklch(83.57% 0.17128 13.70)",
+          "oklch(95.00% 0.17128 13.70)"
+        ]
+      },
+      "relation-recorded": {
+        "role": "primary",
+        "displayName": "Fato registrado",
+        "tonalRamp": [
+          "oklch(15.00% 0.08696 186.45)",
+          "oklch(26.43% 0.08696 186.45)",
+          "oklch(37.86% 0.08696 186.45)",
+          "oklch(49.29% 0.08696 186.45)",
+          "oklch(60.71% 0.08696 186.45)",
+          "oklch(72.14% 0.08696 186.45)",
+          "oklch(83.57% 0.08696 186.45)",
+          "oklch(95.00% 0.08696 186.45)"
+        ]
+      },
+      "relation-temporal": {
+        "role": "secondary",
+        "displayName": "Associação temporal",
+        "tonalRamp": [
+          "oklch(15.00% 0.12038 252.66)",
+          "oklch(26.43% 0.12038 252.66)",
+          "oklch(37.86% 0.12038 252.66)",
+          "oklch(49.29% 0.12038 252.66)",
+          "oklch(60.71% 0.12038 252.66)",
+          "oklch(72.14% 0.12038 252.66)",
+          "oklch(83.57% 0.12038 252.66)",
+          "oklch(95.00% 0.12038 252.66)"
+        ]
+      },
+      "relation-hypothesis": {
+        "role": "secondary",
+        "displayName": "Hipótese sugerida",
+        "tonalRamp": [
+          "oklch(15.00% 0.12346 302.41)",
+          "oklch(26.43% 0.12346 302.41)",
+          "oklch(37.86% 0.12346 302.41)",
+          "oklch(49.29% 0.12346 302.41)",
+          "oklch(60.71% 0.12346 302.41)",
+          "oklch(72.14% 0.12346 302.41)",
+          "oklch(83.57% 0.12346 302.41)",
+          "oklch(95.00% 0.12346 302.41)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Entrada",
+        "purpose": "Título principal da entrada; reduz em telas menores."
+      },
+      "headline": {
+        "displayName": "Página e paciente",
+        "purpose": "Título de página; identidade do paciente usa variante compacta de 28px."
+      },
+      "title": {
+        "displayName": "Seção",
+        "purpose": "Título de seção com peso 700."
+      },
+      "subtitle": {
+        "displayName": "Subdivisão",
+        "purpose": "Cabeçalhos internos de leitura."
+      },
+      "body": {
+        "displayName": "Leitura",
+        "purpose": "Texto geral da interface clínica."
+      },
+      "label": {
+        "displayName": "Ação",
+        "purpose": "Botões e links de ação com peso 650."
+      },
+      "small": {
+        "displayName": "Metadado",
+        "purpose": "Contexto auxiliar, datas e informações secundárias."
+      },
+      "badge": {
+        "displayName": "Estado",
+        "purpose": "Rótulo compacto e explícito de estado."
+      },
+      "measurement": {
+        "displayName": "Medição",
+        "purpose": "Valor clínico tabular em destaque, com unidade próxima."
+      },
+      "navigation": {
+        "displayName": "Navegação global",
+        "purpose": "Rótulo curto sob o ícone no rail desktop, ao lado do ícone no compacto."
+      },
+      "tab": {
+        "displayName": "Abas locais",
+        "purpose": "Área do paciente com seleção inferior e posição sticky sob o topo."
+      },
+      "cited-value": {
+        "displayName": "Valor citado",
+        "purpose": "Medição numérica próxima ao achado, acompanhada de data, unidade e referência."
+      }
+    },
+    "shadows": [
+      {
+        "name": "evidence-inspector",
+        "value": "-8px 0 32px #0f172a18",
+        "purpose": "Separar o detalhe lateral do plano do paciente; backdrop #0f172a55."
+      },
+      {
+        "name": "series-tooltip",
+        "value": "0 4px 16px #0f172a14",
+        "purpose": "Manter o dado legível sobre a série."
+      },
+      {
+        "name": "clinical-node",
+        "value": "0 2px 7px rgb(15 23 42 / 5%)",
+        "purpose": "Definição suave dos nós dentro do canvas do grafo."
+      },
+      {
+        "name": "review-dock",
+        "value": "0 6px 24px #132f341a",
+        "purpose": "Separar a revisão fixa do conteúdo em rolagem."
+      }
+    ],
+    "motion": [
+      {
+        "name": "button-background",
+        "value": "background 0.15s",
+        "purpose": "Transição discreta entre repouso e hover; easing CSS padrão ease."
+      },
+      {
+        "name": "cited-measurement-border",
+        "value": "border-color 150ms",
+        "purpose": "Indicar hover da medição citada sem deslocar o conteúdo."
+      },
+      {
+        "name": "loading-spin",
+        "value": "spin 1s linear infinite",
+        "purpose": "Indicador de carregamento; keyframe final rotate(360deg)."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "(prefers-reduced-motion: reduce)",
+        "purpose": "Remove animações e transições e usa scroll-behavior:auto."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "briefing-intermediate",
+        "value": "1200px"
+      },
+      {
+        "name": "shell-intermediate",
+        "value": "1100px"
+      },
+      {
+        "name": "portfolio-and-graph-intermediate",
+        "value": "1050px"
+      },
+      {
+        "name": "series-navigator-horizontal",
+        "value": "1000px"
+      },
+      {
+        "name": "briefing-context-below",
+        "value": "900px"
+      },
+      {
+        "name": "shell-and-graph-compact",
+        "value": "720px"
+      },
+      {
+        "name": "portfolio-compact",
+        "value": "700px"
+      },
+      {
+        "name": "clinical-detail-compact",
+        "value": "650px"
+      },
+      {
+        "name": "series-and-briefing-compact",
+        "value": "600px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Botão principal",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Ação de maior prioridade no agrupamento.",
+      "html": "<button type=\"button\" class=\"ds-button-primary\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\"/></svg>Adicionar paciente</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 17px;border:1px solid var(--teal,#087c73);border-radius:6px;background:var(--teal,#087c73);color:#fff;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:13px;font-weight:650;line-height:1.6;text-decoration:none;cursor:pointer;transition:background .15s;}.ds-button-primary:hover:not(:disabled){background:var(--teal-dark,#075e59);}.ds-button-primary:disabled{opacity:.55;cursor:not-allowed;}.ds-button-primary:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none;}}"
+    },
+    {
+      "name": "Botão secundário",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Ação de apoio com superfície branca e contorno.",
+      "html": "<button type=\"button\" class=\"ds-button-secondary\">Fontes e atualização</button>",
+      "css": ".ds-button-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 17px;border:1px solid #cbdcdd;border-radius:6px;background:var(--surface,#fff);color:var(--foreground,#132f34);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:13px;font-weight:650;line-height:1.6;text-decoration:none;cursor:pointer;transition:background .15s;}.ds-button-secondary:hover:not(:disabled){background:#e8f2f0;}.ds-button-secondary:disabled{opacity:.55;cursor:not-allowed;}.ds-button-secondary:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}@media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none;}}"
+    },
+    {
+      "name": "Campo com rótulo",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Entrada global de texto com foco visível e rótulo acima.",
+      "html": "<label class=\"ds-field\">Link ou código de compartilhamento<input class=\"ds-field-input\" type=\"text\" placeholder=\"Cole o link recebido\" /></label>",
+      "css": ".ds-field{display:flex;flex-direction:column;gap:6px;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:12px;font-weight:650;line-height:1.6;color:var(--foreground,#132f34);}.ds-field-input{min-height:42px;padding:10px 12px;border:1px solid #b8ccce;border-radius:5px;background:var(--surface,#fff);color:var(--foreground,#132f34);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;font-weight:400;line-height:1.6;caret-color:var(--teal,#087c73);}.ds-field-input::placeholder{color:#526b71;opacity:1;}.ds-field-input:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}"
+    },
+    {
+      "name": "Navegação global e local",
+      "kind": "nav",
+      "refersTo": "navigation-item",
+      "description": "Recorte do shell de 88px e topo de 64px, com abas locais sticky; a aplicação controla a seleção e o teclado.",
+      "html": "<div class=\"ds-navigation-sample\"><nav class=\"ds-nav\" aria-label=\"Espaço do médico\"><a class=\"ds-nav-link\" href=\"#ds-carteira\" aria-current=\"page\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/></svg><span>Carteira</span></a><a class=\"ds-nav-link\" href=\"#ds-convite\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg><span>Convite</span></a></nav><div class=\"ds-navigation-content\"><header class=\"ds-topbar\">Espaço do médico / Acompanhamento</header><div class=\"ds-tabs\" role=\"tablist\" aria-label=\"Áreas do paciente\"><button type=\"button\" class=\"ds-tab\" role=\"tab\" aria-selected=\"true\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v16\"></path><path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\"></path></svg>Resumo</button><button type=\"button\" class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2\"></path></svg>Evolução</button><button type=\"button\" class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 22h2a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v2.85\"></path><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"></path><path d=\"M8 14v2.2l1.6 1\"></path><circle cx=\"8\" cy=\"16\" r=\"6\"></circle></svg>Histórico</button><button type=\"button\" class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 6a9 9 0 0 0-9 9V3\"></path><circle cx=\"18\" cy=\"6\" r=\"3\"></circle><circle cx=\"6\" cy=\"18\" r=\"3\"></circle></svg>Relações</button><button type=\"button\" class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z\"></path><path d=\"M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12\"></path><path d=\"M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17\"></path></svg>Fontes</button><button type=\"button\" class=\"ds-tab\" role=\"tab\" aria-selected=\"false\" tabindex=\"-1\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\"></path><path d=\"m9 12 2 2 4-4\"></path></svg>Permissões</button></div></div></div>",
+      "css": ".ds-navigation-sample{display:grid;grid-template-columns:88px minmax(0,1fr);background:var(--background,#f4f8f8);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;}.ds-nav{display:flex;flex-direction:column;gap:10px;padding:22px 10px;background:#073e3e;}.ds-nav-link{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:64px;padding:10px 4px;border-radius:8px;color:#e3f2ef;font-size:11px;font-weight:650;text-decoration:none;}.ds-nav-link:hover{background:#155351;}.ds-nav-link[aria-current=\"page\"]{background:#1d5c56;color:#fff;}.ds-nav-link:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-navigation-content{min-width:0;}.ds-topbar{display:flex;align-items:center;height:64px;padding:0 32px;background:var(--surface,#fff);border-bottom:1px solid var(--border,#d7e3e5);color:var(--muted,#4d646b);font-size:12px;}.ds-tabs{display:flex;gap:24px;overflow:auto;position:sticky;top:64px;z-index:30;margin:0 32px;border-bottom:1px solid #bfd2d3;background:var(--background,#f4f8f8);}.ds-tab{display:flex;align-items:center;gap:7px;padding:14px 2px;border:0;border-bottom:3px solid transparent;background:none;color:#50676c;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;font-weight:650;line-height:1.6;white-space:nowrap;cursor:pointer;}.ds-tab:hover{color:var(--teal-dark,#075e59);}.ds-tab[aria-selected=\"true\"]{color:var(--teal-dark,#075e59);border-bottom-color:var(--teal,#087c73);}.ds-tab:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}@media(max-width:720px){.ds-navigation-sample{display:block;}.ds-nav{flex-direction:row;gap:6px;padding:8px 16px;}.ds-nav-link{min-height:44px;padding:8px 10px;flex-direction:row;gap:6px;}.ds-nav-link svg{width:18px;}.ds-topbar{padding:0 16px;}.ds-tabs{gap:18px;margin:0 16px;}.ds-tab{font-size:12px;gap:5px;}.ds-tab svg{width:14px;}}"
+    },
+    {
+      "name": "Badges de estado",
+      "kind": "chip",
+      "refersTo": "badge-positive",
+      "description": "Estados positivos, de atenção e neutros com texto explícito; não são controles.",
+      "html": "<div class=\"ds-badge-row\"><span class=\"ds-badge\">Fato registrado</span><span class=\"ds-badge ds-badge-warning\">Fonte desatualizada</span><span class=\"ds-badge ds-badge-neutral\">Revisão registrada</span></div>",
+      "css": ".ds-badge-row{display:flex;flex-wrap:wrap;gap:8px;}.ds-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border:1px solid #c4dfd8;border-radius:4px;background:#eef8f4;color:#15574c;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:11px;font-weight:650;line-height:1.5;}.ds-badge-warning{background:#fff7e6;color:#80520d;border-color:#e8d4a6;}.ds-badge-neutral{background:#f1f5f7;color:#405b65;border-color:#d6e1e6;}"
+    },
+    {
+      "name": "Linha da carteira",
+      "kind": "card",
+      "refersTo": "patient-row",
+      "description": "Artigo com identidade, contexto, datas e atalhos diretos de resumo, evolução e histórico.",
+      "html": "<section class=\"ds-portfolio\" aria-label=\"Carteira de pacientes\"><article class=\"ds-patient-row\" aria-label=\"Daniel Vaz\"><div class=\"ds-row-identity\"><span class=\"ds-row-avatar\" aria-hidden=\"true\">DV</span><div><h2 class=\"ds-row-title\"><button type=\"button\" class=\"ds-patient-name\">Daniel Vaz<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button></h2><p class=\"ds-row-meta\">32 anos · Identificação compartilhada</p><span class=\"ds-row-access\"><svg width=\"13\" height=\"13\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11\"/><path d=\"m9 12 2 2 4-4\"/></svg>Acesso ativo</span></div></div><div class=\"ds-row-context\"><span class=\"ds-row-initial\">Revisão inicial</span><p class=\"ds-row-highlight\">Exames até out/2025 · wearable até nov/2026</p><span class=\"ds-row-received\">Recebido em 11/11/2026, 12:00</span></div><dl class=\"ds-row-dates\"><div><dt><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M12 6v6l4 2\"/></svg>Último dado clínico</dt><dd>11/11/2026</dd></div><div><dt><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 3-6.7L3 8\"/><path d=\"M3 3v5h5M12 7v5l4 2\"/></svg>Última revisão</dt><dd>Ainda não revisado</dd></div></dl><div class=\"ds-row-actions\"><button type=\"button\" class=\"ds-row-primary\">Revisar paciente<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14m-6-6 6 6-6 6\"/></svg></button><div class=\"ds-row-shortcuts\"><button type=\"button\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M22 12h-4l-3 9L9 3l-3 9H2\"/></svg>Evolução</button><button type=\"button\"><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 12a9 9 0 1 0 3-6.7L3 8\"/><path d=\"M3 3v5h5M12 7v5l4 2\"/></svg>Histórico</button></div></div></article></section>",
+      "css": ".ds-portfolio{min-width:0;border:1px solid var(--border,#d7e3e5);border-radius:10px;background:var(--surface,#fff);color:var(--foreground,#132f34);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;}.ds-patient-row{display:grid;grid-template-columns:minmax(12rem,1.1fr) minmax(13rem,1.5fr) minmax(9rem,1fr);gap:1.25rem 1.75rem;padding:1.75rem 1.5rem 1.25rem;}.ds-row-identity{display:flex;align-items:flex-start;gap:.85rem;min-width:0;}.ds-row-avatar{display:grid;place-items:center;width:2.8rem;height:2.8rem;flex-shrink:0;background:#e3f3ed;color:var(--teal-dark,#075e59);border:1px solid #cee4da;border-radius:50%;font-size:.85rem;font-weight:750;}.ds-row-title{margin:0 0 .3rem;font-size:1rem;line-height:1.4;font-weight:750;letter-spacing:-.02em;}.ds-patient-name{display:flex;align-items:center;gap:.7rem;border:0;padding:0;background:transparent;text-align:left;color:var(--foreground,#132f34);font:inherit;cursor:pointer;}.ds-patient-name svg{color:var(--teal,#087c73);}.ds-patient-name:hover{color:var(--teal-dark,#075e59);text-decoration:underline;text-underline-offset:4px;}.ds-row-meta{margin:0 0 .6rem;font-size:.78rem;color:var(--muted,#4d646b);}.ds-row-access{display:inline-flex;align-items:center;gap:.35rem;font-size:.72rem;color:var(--teal-dark,#075e59);}.ds-row-initial{display:inline-flex;padding:.2rem .55rem;border:1px solid #e4d3aa;border-radius:4px;color:#79540f;background:#fff8e8;font-size:.74rem;font-weight:700;}.ds-row-highlight{font-size:.875rem;line-height:1.6;margin:.6rem 0 .35rem;max-width:50ch;overflow-wrap:anywhere;}.ds-row-received{font-size:.73rem;color:var(--muted,#4d646b);}.ds-row-dates{display:grid;align-content:start;gap:.85rem;margin:0;font-variant-numeric:tabular-nums;}.ds-row-dates dt{display:flex;align-items:center;gap:.35rem;color:var(--muted,#4d646b);font-size:.7rem;margin-bottom:.15rem;}.ds-row-dates dd{margin:0 0 0 1.2rem;font-size:.8rem;font-weight:600;}.ds-row-actions{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding-top:1rem;border-top:1px solid #edf2f1;}.ds-row-primary,.ds-row-shortcuts button{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;min-height:40px;border-radius:6px;padding:.5rem .85rem;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:.8rem;font-weight:650;line-height:1.6;cursor:pointer;}.ds-row-primary{color:#fff;background:var(--teal,#087c73);border:1px solid var(--teal,#087c73);}.ds-row-primary:hover{background:var(--teal-dark,#075e59);}.ds-row-shortcuts{display:flex;flex-wrap:wrap;gap:.5rem;}.ds-row-shortcuts button{color:var(--teal-dark,#075e59);border:1px solid var(--border,#d7e3e5);background:#fff;}.ds-row-shortcuts button:hover{background:#edf6f3;}.ds-patient-name:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-row-primary:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-row-shortcuts button:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}@media(max-width:1050px){.ds-patient-row{grid-template-columns:minmax(11rem,1fr) minmax(12rem,1.25fr);}.ds-row-dates{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:1rem 2rem;}}@media(max-width:700px){.ds-patient-row{grid-template-columns:minmax(0,1fr);gap:1.1rem;padding:1.25rem 1rem 1rem;}.ds-row-context{padding-top:1rem;border-top:1px solid #edf2f1;}.ds-row-actions{flex-wrap:wrap;}.ds-row-primary,.ds-row-shortcuts{flex-grow:1;}.ds-row-shortcuts button{flex:1;}}"
+    },
+    {
+      "name": "Achado com medidas citadas",
+      "kind": "custom",
+      "refersTo": "cited-measurement",
+      "description": "Valores reais do seed e referência de cada laudo, com escala comum apenas dentro do grupo comparável; cada botão abre sua evidência.",
+      "html": "<article class=\"ds-finding\"><div class=\"ds-finding-copy\"><h3>Evolução documentada do LDL</h3><span class=\"ds-finding-basis\">Fato registrado</span><p>112 mg/dL em 15/03/2022 e 156 mg/dL em 18/10/2025. Consulte a referência de cada laudo.</p><button type=\"button\" class=\"ds-finding-link\">Ver evolução de Colesterol LDL (Fração Ruim)<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></button></div><div class=\"ds-cited-group\"><button type=\"button\" class=\"ds-cited-measure\" data-status=\"normal\" aria-label=\"Ver evidência: Colesterol LDL (Fração Ruim) · 112 mg/dL 15/03/2022, versão 1\"><span class=\"ds-cited-top\"><time datetime=\"2022-03-15\">15/03/2022</time><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></span><span class=\"ds-cited-value\"><strong>112</strong> mg/dL</span><span class=\"ds-cited-rail\" aria-hidden=\"true\"><span style=\"width:71.7948717948718%\"></span></span><span class=\"ds-cited-ticks\" aria-hidden=\"true\"><span>0</span><span>156</span></span><span class=\"ds-cited-status\">Na referência</span><span class=\"ds-cited-reference\">Referência: 0–130 mg/dL</span></button><button type=\"button\" class=\"ds-cited-measure\" data-status=\"critical\" aria-label=\"Ver evidência: Colesterol LDL (Fração Ruim) · 156 mg/dL 18/10/2025, versão 1\"><span class=\"ds-cited-top\"><time datetime=\"2025-10-18\">18/10/2025</time><svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></span><span class=\"ds-cited-value\"><strong>156</strong> mg/dL</span><span class=\"ds-cited-rail\" aria-hidden=\"true\"><span style=\"width:100%\"></span></span><span class=\"ds-cited-ticks\" aria-hidden=\"true\"><span>0</span><span>156</span></span><span class=\"ds-cited-status\">Crítico na origem</span><span class=\"ds-cited-reference\">Referência: 0–130 mg/dL</span></button></div></article>",
+      "css": ".ds-finding{display:grid;grid-template-columns:minmax(0,1fr) minmax(175px,42%);gap:24px;align-items:start;padding:24px 0;border-top:1px solid #d7e3e5;border-bottom:1px solid #d7e3e5;color:var(--foreground,#132f34);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;}.ds-finding-copy{min-width:0;}.ds-finding h3{font-size:17px;line-height:1.45;font-weight:700;margin:0 0 7px;}.ds-finding-basis{font-size:11px;font-weight:650;color:#405b65;}.ds-finding-copy p{max-width:72ch;line-height:1.7;font-size:13px;margin:12px 0 16px;}.ds-finding-link{display:inline-flex;align-items:center;gap:5px;border:0;padding:0;background:none;color:var(--teal-dark,#075e59);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:12px;font-weight:650;line-height:1.7;text-align:left;text-decoration:underline;text-underline-offset:4px;cursor:pointer;}.ds-finding-link:hover{color:var(--teal,#087c73);}.ds-cited-group{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px;min-width:0;}.ds-cited-measure{min-width:0;min-height:44px;padding:12px;border:1px solid #d7e3e5;border-radius:8px;background:#fff;color:#132f34;text-align:left;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;cursor:pointer;transition:border-color 150ms;}.ds-cited-measure:hover{border-color:#087c73;background:#f5faf9;}.ds-cited-top{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;color:#4d646b;}.ds-cited-top svg{color:#075e59;flex-shrink:0;}.ds-cited-value{display:block;font-size:11px;margin:5px 0 10px;font-variant-numeric:tabular-nums;}.ds-cited-value strong{font-size:27px;line-height:1.35;font-weight:750;letter-spacing:-.03em;}.ds-cited-rail{position:relative;display:block;height:5px;border-radius:2px;background:#e4eeec;overflow:hidden;}.ds-cited-rail>span{position:absolute;display:block;height:100%;border-radius:2px;background:#087c73;}.ds-cited-measure[data-status=\"attention\"] .ds-cited-rail>span,.ds-cited-measure[data-status=\"critical\"] .ds-cited-rail>span{background:#986a24;}.ds-cited-ticks{display:flex;justify-content:space-between;color:#4d646b;font-size:9px;font-variant-numeric:tabular-nums;margin-top:2px;}.ds-cited-status{display:block;margin-top:7px;color:#405b65;font-size:10px;font-weight:650;}.ds-cited-measure[data-status=\"attention\"] .ds-cited-status{color:#80520d;}.ds-cited-measure[data-status=\"critical\"] .ds-cited-status{color:#9f1239;}.ds-cited-reference{display:block;font-size:10px;line-height:1.5;color:#4d646b;margin-top:3px;overflow-wrap:anywhere;}.ds-cited-measure:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-finding-link:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}@media(max-width:1200px){.ds-finding{grid-template-columns:1fr;gap:18px;}}@media(max-width:600px){.ds-finding{gap:16px;padding:22px 0;}.ds-finding h3{font-size:16px;}}@media(prefers-reduced-motion:reduce){.ds-cited-measure{transition:none;}}"
+    },
+    {
+      "name": "Barra de revisão",
+      "kind": "custom",
+      "refersTo": "review-dock",
+      "description": "Amostra visual da barra inferior; no app fica fixa e a conclusão depende de carregar todo o conjunto de novidades.",
+      "html": "<section class=\"ds-review-dock\" aria-labelledby=\"ds-review-heading\"><div class=\"ds-review-label\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"23\" height=\"23\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 22h2a2 2 0 0 0 2-2V8a2.4 2.4 0 0 0-.706-1.706l-3.588-3.588A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v2.85\"></path><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"></path><path d=\"M8 14v2.2l1.6 1\"></path><circle cx=\"8\" cy=\"16\" r=\"6\"></circle></svg><div><h2 id=\"ds-review-heading\">Histórico disponível para revisão inicial</h2><p>Primeira leitura · conjunto de 11/11/2026, 12:00</p></div></div><div class=\"ds-review-actions\"><button type=\"button\" class=\"ds-review-button\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 7 17l-5-5\"></path><path d=\"m22 10-7.5 7.5L13 16\"></path></svg>Concluir revisão das novidades</button></div><span class=\"ds-review-sr\">Concluir registra apenas o conjunto apresentado a você. Não declara normalidade, diagnóstico ou conduta.</span></section>",
+      "css": ".ds-review-dock{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:14px 20px;border:1px solid #c7dbd8;border-radius:10px;background:#fff;color:var(--foreground,#132f34);box-shadow:0 6px 24px #132f341a;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;}.ds-review-label{display:flex;align-items:center;gap:12px;min-width:0;color:var(--teal-dark,#075e59);}.ds-review-label svg{flex-shrink:0;}.ds-review-label h2{font-size:13px;font-weight:750;letter-spacing:0;margin:0 0 2px;color:var(--foreground,#132f34);}.ds-review-label p{margin:0;font-size:11px;color:var(--muted,#4d646b);}.ds-review-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}.ds-review-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 17px;border:1px solid var(--teal,#087c73);border-radius:6px;background:var(--teal,#087c73);color:#fff;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:12px;font-weight:650;line-height:1.6;cursor:pointer;transition:background .15s;}.ds-review-button:hover:not(:disabled){background:var(--teal-dark,#075e59);}.ds-review-button:disabled{opacity:.55;cursor:not-allowed;}.ds-review-button:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-review-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}@media(max-width:1100px){.ds-review-dock{gap:12px;padding:12px 16px;}.ds-review-label>svg{display:none;}.ds-review-actions{flex-wrap:wrap;justify-content:flex-end;max-width:50%;}}@media(max-width:720px){.ds-review-dock{flex-direction:column;align-items:stretch;gap:10px;padding:12px;}.ds-review-label h2{font-size:12px;}.ds-review-label p{font-size:10px;}.ds-review-actions{max-width:none;justify-content:stretch;}.ds-review-button{width:100%;}.ds-review-label>svg{display:block;width:19px;}}@media(prefers-reduced-motion:reduce){.ds-review-button{transition:none;}}"
+    },
+    {
+      "name": "Inspector de evidência",
+      "kind": "custom",
+      "refersTo": "evidence-inspector",
+      "description": "Amostra visual estática do detalhe lateral; a aplicação implementa o diálogo modal e o retorno do foco.",
+      "html": "<section class=\"ds-inspector\" aria-label=\"Evidência\"><div class=\"ds-inspector-header\"><div><p class=\"ds-inspector-context\">Daniel Vaz · Evidência</p><h2 class=\"ds-inspector-title\">Ferritina Sérica</h2></div><button type=\"button\" class=\"ds-inspector-close\" aria-label=\"Fechar evidência\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"m18 6-12 12M6 6l12 12\"/></svg></button></div><div class=\"ds-measurement\"><strong>22</strong><span>ng/mL</span><p>Atenção sinalizada na origem</p></div><dl class=\"ds-details\"><div><dt>Data da coleta ou evento</dt><dd>18/10/2025</dd></div><div><dt>Fonte</dt><dd>Fleury Medicina e Saúde</dd></div><div><dt>Origem do registro</dt><dd>Dado extraído da fonte</dd></div></dl></section>",
+      "css": ".ds-inspector{width:min(40rem,100%);padding:1.75rem;border-left:1px solid #cbd5e1;background:#fff;color:#0f172a;box-shadow:-8px 0 32px #0f172a18;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;}.ds-inspector-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:2rem;}.ds-inspector-context{margin:0 0 .4rem;color:var(--muted,#4d646b);font-size:.8rem;}.ds-inspector-title{margin:0;font-size:1.5rem;font-weight:700;line-height:1.3;}.ds-inspector-close{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;min-height:42px;padding:10px 17px;border:1px solid #cbdcdd;border-radius:6px;background:#fff;color:var(--foreground,#132f34);cursor:pointer;transition:background .15s;}.ds-inspector-close:hover{background:#e8f2f0;}.ds-inspector-close:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-measurement{padding:1.5rem;border:1px solid #99f6e4;border-radius:8px;background:#f0fdfa;color:#115e59;}.ds-measurement strong{font-size:2.5rem;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}.ds-measurement>span{margin-left:.5rem;}.ds-measurement p{margin:.4rem 0 0;font-size:.85rem;}.ds-details{margin:1rem 0 0;}.ds-details>div{display:grid;grid-template-columns:11rem 1fr;gap:1rem;padding:.9rem 0;border-bottom:1px solid #e2e8f0;font-size:.85rem;}.ds-details dt{color:#475569;}.ds-details dd{margin:0;overflow-wrap:anywhere;}@media(max-width:650px){.ds-inspector{padding:1.25rem;}.ds-details>div{grid-template-columns:1fr;gap:.3rem;}}@media(prefers-reduced-motion:reduce){.ds-inspector-close{transition:none;}}"
+    },
+    {
+      "name": "Nó e lista de relações",
+      "kind": "custom",
+      "refersTo": "graph-node",
+      "description": "Recorte do canvas com registro numérico, semântica de linhas e lista lateral de evidências.",
+      "html": "<div class=\"ds-graph-sample\"><div class=\"ds-graph-area\"><div class=\"ds-graph-node\"><span class=\"ds-graph-kind\">Biomarcador</span><button type=\"button\" class=\"ds-graph-evidence\"><strong>Ferritina Sérica</strong></button><span class=\"ds-graph-reading\"><span>22 <small>ng/mL</small></span><time datetime=\"2025-10-18\">18/10/2025</time></span></div><div class=\"ds-graph-legend\"><button type=\"button\" aria-pressed=\"false\"><i class=\"ds-graph-line\" aria-hidden=\"true\"></i>Fato registrado</button><button type=\"button\" aria-pressed=\"false\"><i class=\"ds-graph-line ds-graph-temporal\" aria-hidden=\"true\"></i>Associação temporal</button><button type=\"button\" aria-pressed=\"false\"><i class=\"ds-graph-line ds-graph-hypothesis\" aria-hidden=\"true\"></i>Hipótese do sistema</button></div></div><aside class=\"ds-graph-aside\"><h3>Lista de relações</h3><span class=\"ds-graph-basis\">Fato registrado</span><h4>Daniel Vaz → Ferritina Sérica</h4><p>Resultado laboratorial registrado</p><button type=\"button\" class=\"ds-graph-ref\">Ferritina Sérica · 18/10/2025<svg width=\"15\" height=\"15\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></button></aside></div>",
+      "css": ".ds-graph-sample{display:grid;grid-template-columns:minmax(0,1fr) 290px;min-width:0;border:1px solid #cbdcdd;border-radius:8px;overflow:hidden;background:#fff;color:#0f172a;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;}.ds-graph-area{display:grid;justify-items:start;gap:1.5rem;min-width:0;padding:1.2rem;background:#f6f9f8;}.ds-graph-node{width:218px;padding:1rem;border:1px solid #99bfb9;border-radius:.6rem;background:#fff;color:#0f172a;box-shadow:0 2px 7px rgb(15 23 42 / 5%);}.ds-graph-kind{display:block;margin-bottom:.4rem;font-size:.72rem;font-weight:600;color:#475569;}.ds-graph-evidence{display:block;width:100%;padding:0;border:0;background:none;color:#075e56;text-align:left;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:14px;line-height:1.6;cursor:pointer;}.ds-graph-evidence strong{display:block;overflow-wrap:anywhere;font-size:.9rem;font-weight:700;line-height:1.5;}.ds-graph-evidence:hover strong{text-decoration:underline;text-underline-offset:.2em;}.ds-graph-reading{display:grid;gap:.25rem;margin-top:.55rem;}.ds-graph-reading>span{font-size:1.25rem;line-height:1.2;font-weight:750;font-variant-numeric:tabular-nums;color:#075e59;}.ds-graph-reading small{font-size:.75rem;font-weight:500;}.ds-graph-reading time{font-size:.75rem;color:#4d646b;}.ds-graph-legend{display:flex;flex-wrap:wrap;gap:.5rem .75rem;color:#475569;font-size:.8rem;}.ds-graph-legend button{display:inline-flex;align-items:center;gap:.45rem;padding:.5rem .6rem;min-height:36px;border:1px solid transparent;border-radius:4px;background:transparent;color:inherit;font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:.8rem;line-height:1.6;cursor:pointer;}.ds-graph-legend button:hover{background:#e8f0ef;}.ds-graph-legend button[aria-pressed=\"true\"]{border-color:#a6c9c0;background:#e3f2ee;color:#075e59;}.ds-graph-line{width:1.8rem;border-top:2px solid #0b766e;}.ds-graph-temporal{border-top-style:dashed;border-color:#225f9f;}.ds-graph-hypothesis{border-top-style:dotted;border-color:#7654a2;}.ds-graph-aside{padding:1.2rem;border-left:1px solid #d7e3e5;min-width:0;}.ds-graph-aside h3{margin:0 0 .75rem;font-size:1.05rem;font-weight:700;}.ds-graph-basis{display:inline-flex;gap:.45rem;font-size:.72rem;font-weight:650;color:#075e59;}.ds-graph-aside h4{margin:.45rem 0;font-size:.875rem;line-height:1.65;font-weight:650;overflow-wrap:anywhere;}.ds-graph-aside p{margin:.35rem 0 .7rem;color:#475569;font-size:.9rem;}.ds-graph-ref{display:inline-flex;align-items:center;gap:.4rem;border:0;padding:0;background:none;color:var(--teal-dark,#075e59);font-family:var(--font-sans,\"Manrope Variable\",sans-serif);font-size:.8rem;font-weight:650;line-height:1.6;text-align:left;text-decoration:underline;text-underline-offset:4px;cursor:pointer;}.ds-graph-ref:hover{color:var(--teal,#087c73);}.ds-graph-evidence:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-graph-legend button:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}.ds-graph-ref:focus-visible{outline:3px solid #086eaa;outline-offset:3px;}@media(max-width:1050px){.ds-graph-sample{grid-template-columns:minmax(0,1fr);}.ds-graph-aside{border-left:0;border-top:1px solid #d7e3e5;}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Contexto que acompanha o cuidado",
+    "overview": "A web do médico estende a identidade Rivio já estabelecida no mobile: teal profundo, superfícies claras e texto slate. A composição mantém uma presença de marca estável na navegação e deixa os registros clínicos ocuparem a área principal. O resultado é sóbrio, legível e orientado ao trabalho contínuo.\n\nA densidade vem de linhas comparáveis, metadados próximos e divisores discretos. Valores citados, datas e ações de origem tornam a leitura investigável sem abrir cada registro antes de compará-lo. Painéis delimitam agrupamentos; o conteúdo clínico também vive diretamente sobre o fundo claro. A evidência abre em um inspector lateral, preservando o paciente e o contexto visual ao fundo. Este documento registra a implementação em `web/`, sem criar uma direção nova para o mobile.",
+    "keyCharacteristics": [
+      "Teal na navegação, nas ações e nos caminhos de investigação.",
+      "Manrope local em toda a interface, com pesos e tamanhos definidos pela função.",
+      "Superfícies planas, contornos discretos e cantos pequenos.",
+      "Datas, unidades, origem e estado próximos do conteúdo clínico.",
+      "Atalhos nomeados e controles de investigação disponíveis durante a leitura.",
+      "Reorganização compacta no celular com rolagem localizada para conteúdo comparável."
+    ],
+    "rules": [
+      {
+        "name": "The Evidência Visível Rule",
+        "body": "Relação registrada, associação temporal e hipótese permanecem identificáveis por texto e estilo de linha, além da cor.",
+        "section": "colors"
+      },
+      {
+        "name": "The Comparação Numérica Rule",
+        "body": "Tabelas, valores de séries e medições destacadas usam números tabulares; mantenha valor, unidade e data reconhecíveis durante a comparação.",
+        "section": "typography"
+      },
+      {
+        "name": "The Plano de Trabalho Rule",
+        "body": "Painéis e listas permanecem planos; reserve sombra aos quatro papéis de profundidade registrados acima.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** manter Manrope local, números tabulares e a hierarquia tipográfica registrada.",
+      "**Do** usar teal para ações e investigação, com texto de estado sempre explícito.",
+      "**Do** manter a identidade do paciente e a origem próximas do conteúdo investigado.",
+      "**Do** manter atalhos nomeados, medições citadas e ações de evidência junto ao contexto que explicam.",
+      "**Do** reorganizar o shell nos breakpoints documentados e conter a rolagem de tabelas e abas.",
+      "**Do** preservar foco visível, navegação por teclado e a preferência por movimento reduzido.",
+      "**Do** usar o sidecar para consultar os snippets e extensões; o frontmatter continua sendo a fonte normativa dos tokens."
+    ],
+    "donts": [
+      "**Don't** substituir a família local por uma fonte decorativa ou depender de fonte remota.",
+      "**Don't** usar somente cor para distinguir fato, associação, hipótese ou estado clínico.",
+      "**Don't** aplicar sombra e elevação a todos os painéis ou a cada registro da lista.",
+      "**Don't** remover datas, unidades ou rótulos de origem para deixar um número isolado em destaque.",
+      "**Don't** comprimir tabelas até perder legibilidade nem permitir que elas alarguem o shell no celular.",
+      "**Don't** usar avisos ou controles de demonstração como parte da interface clínica; a separação entre execução real e cenários permanece técnica.",
+      "**Don't** tratar capturas de revisão ou conteúdo sintético como assets e identidade permanente."
+    ]
+  }
+}

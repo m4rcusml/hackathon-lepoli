@@ -1,0 +1,10 @@
+export declare const Session: (data: unknown) => boolean;
+export declare const PatientList: (data: unknown) => boolean;
+export declare const Snapshot: (data: unknown) => boolean;
+export declare const AccessStatus: (data: unknown) => boolean;
+export declare const SharingResolution: (data: unknown) => boolean;
+export declare const FollowupRequest: (data: unknown) => boolean;
+export declare const UpdatesPage: (data: unknown) => boolean;
+export declare const ReviewResult: (data: unknown) => boolean;
+export declare const FollowupRequestInput: (data: unknown) => boolean;
+export declare const ReviewInput: (data: unknown) => boolean;

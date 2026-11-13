@@ -1,0 +1,4562 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TEMPORÁRIO — contrato médico para planejamento web",
+    "version": "0.1-draft",
+    "description": "RASCUNHO TEMPORÁRIO, NÃO APROVADO PELO BACKEND. Nenhum endpoint deste documento é afirmado como existente. Serve exclusivamente para planejar web, mocks e contrato de integração; não obriga o backend a implementar estas rotas/formas. Alterações deverão ser alinhadas pelo responsável backend e adaptadas na fronteira web."
+  },
+  "x-provisional": true,
+  "x-purpose": "web-and-integration-planning-only",
+  "servers": [
+    {
+      "url": "/api/doctor/v0",
+      "description": "Base provisória mesma origem. Reverse proxy/ponte Next de transporte; sem autenticação ou lógica clínica própria na web."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Contrato temporário",
+      "description": "Todas as operações são propostas temporárias para planejamento."
+    }
+  ],
+  "paths": {
+    "/session": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "getDoctorSession",
+        "summary": "Bootstrap de sessão e CSRF",
+        "security": [],
+        "description": "Retorna anonymous com doctor/expiresAt null ou authenticated. Pode criar cookie anônimo para CSRF. Não retorna token de autenticação em JSON. pendingInvitation permite retomar convite após login sem token bruto; null quando não há handoff válido. Não retorna snapshots nem contexto temporário clínico.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "state": "authenticated",
+                    "doctor": {
+                      "id": "doctor-demo-1",
+                      "displayName": "Médico demonstrativo",
+                      "professionalIdentifier": null
+                    },
+                    "expiresAt": "2026-11-11T23:00:00Z",
+                    "csrfToken": "csrf-demonstrativo-sem-validade",
+                    "pendingInvitation": null
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/auth/start": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "startDoctorAuthentication",
+        "summary": "Iniciar autenticação delegada ao backend",
+        "security": [],
+        "parameters": [
+          {
+            "name": "returnTo",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "/doctor/patients"
+            },
+            "description": "Caminho relativo permitido sob /doctor; rejeitar origem externa e //host."
+          },
+          {
+            "name": "loginContextId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Identificador opaco, não é credencial."
+            },
+            "description": "Handoff do convite emitido por sharing/resolve e ligado ao cookie; não é credencial. Backend preserva só metadados do convite durante autenticação e retorna Session.pendingInvitation após callback. Nunca restaura acesso clínico temporário."
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirecionamento para autenticação; provedor ainda não escolhido.",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        },
+        "description": "Backend vincula loginContextId ao fluxo/state de autenticação e ao cookie. Callback restaura pendingInvitation em /session. Um handoff não pode ser trocado por outro sem validação; handoff expirado/substituído retorna409 AUTH_CONTEXT_INVALID. Nenhum token bruto ou temporaryAccessId em returnTo/storage."
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "logoutDoctor",
+        "summary": "Encerrar sessão médica e invalidar contexto do navegador",
+        "security": [
+          {
+            "doctorSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Token da resposta GET /session."
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Sessão/cookies invalidados. Web limpa todo conteúdo clínico e contextos temporários deste navegador."
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/patients": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "listDoctorPatients",
+        "summary": "Carteira restrita ao médico autenticado",
+        "security": [
+          {
+            "doctorSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 120
+            },
+            "description": "Busca apenas na carteira autorizada; não é busca global de pacientes."
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "with_updates",
+                "active",
+                "inactive"
+              ]
+            },
+            "description": "Default active."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Cursor opaco da carteira, mantém filtros."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientListEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "items": [
+                      {
+                        "relationshipId": "grant-demo-dan",
+                        "accessStatus": "active",
+                        "patient": {
+                          "id": "usr-dan-2026",
+                          "displayName": "Daniel Vaz",
+                          "age": 32,
+                          "biologicalSex": "Masculino",
+                          "disambiguationLabel": "Paciente demonstrativo"
+                        },
+                        "lastClinicalEventAt": null,
+                        "lastReceivedAt": "2026-11-11T14:30:00Z",
+                        "review": {
+                          "lastReviewedCursor": null,
+                          "lastReviewedAt": null,
+                          "mode": "initial_review",
+                          "unreadGroupCount": null
+                        },
+                        "highlight": "Ferritina: resultado laboratorial de 18/10/2025",
+                        "lastClinicalEventOn": "2025-10-18"
+                      }
+                    ],
+                    "page": {
+                      "nextCursor": null,
+                      "hasMore": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/sharing/resolve": {
+      "post": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "resolveSharingToken",
+        "summary": "Trocar token do QR por contexto ligado ao cookie",
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Token da resposta GET /session."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "description": "Token recebido por QR/link; não registrar nem persistir.",
+                    "minLength": 1,
+                    "maxLength": 4096
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              },
+              "example": {
+                "token": "token-ficticio-apenas-para-planejamento"
+              }
+            }
+          }
+        },
+        "description": "Bootstrap GET /session antes. Backend valida convite e associa prova ao cookie HttpOnly, retornando somente identificadores. Cada resolução pode criar contexto por aba; expiresAt jamais estende o TTL original do convite. temporaryAccessId fica somente em memória da aba (sem URL ou storage). Não concede vínculo contínuo. Quando acompanhamento pode ser solicitado, loginContextId guarda o handoff no servidor e é passado a auth/start se houver login; após callback, /session.pendingInvitation devolve metadados autorizados.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SharingResolutionEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "invitation": {
+                      "id": "invite-demo-1",
+                      "kind": "consultation",
+                      "expiresAt": "2026-11-11T17:00:00Z",
+                      "permittedScopes": [
+                        "read_exams",
+                        "read_wearables",
+                        "read_graphrag_briefing"
+                      ],
+                      "canRequestFollowup": true
+                    },
+                    "temporaryAccess": {
+                      "kind": "temporary",
+                      "contextId": "temp-demo-1",
+                      "patientId": "usr-dan-2026",
+                      "grantId": null,
+                      "scopeVersion": "scope-demo-1",
+                      "scopes": [
+                        "read_exams",
+                        "read_wearables",
+                        "read_graphrag_briefing"
+                      ],
+                      "expiresAt": "2026-11-11T17:00:00Z",
+                      "readOnly": true
+                    },
+                    "requiresDoctorAuthentication": true,
+                    "loginContextId": "login-demo-1"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "410": {
+            "$ref": "#/components/responses/Gone"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/follow-up-requests": {
+      "post": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "requestPatientFollowup",
+        "summary": "Solicitar vínculo ao paciente identificado pelo convite",
+        "security": [
+          {
+            "doctorSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Token da resposta GET /session."
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Chave aleatória por intenção; repetir mesma chave e body em retry.",
+              "minLength": 16,
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FollowupRequestInput"
+              },
+              "example": {
+                "invitationId": "invite-demo-1",
+                "requestedScopes": [
+                  "read_exams",
+                  "read_wearables",
+                  "read_graphrag_briefing"
+                ],
+                "requestedDuration": {
+                  "mode": "until",
+                  "expiresAt": "2026-12-11T15:00:00Z"
+                }
+              }
+            }
+          }
+        },
+        "description": "Backend confirma posse do convite ligado ao cookie e médico pela sessão. Não aceitar doctorId/patientId arbitrários nem permitir escopos além dos que o paciente pode aprovar no fluxo. Idempotency-Key repetida com body distinto retorna 409.",
+        "responses": {
+          "201": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowupRequestEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "id": "request-demo-1",
+                    "invitationId": "invite-demo-1",
+                    "status": "pending",
+                    "requestedScopes": [
+                      "read_exams",
+                      "read_wearables",
+                      "read_graphrag_briefing"
+                    ],
+                    "requestedDuration": {
+                      "mode": "until",
+                      "expiresAt": "2026-12-11T15:00:00Z"
+                    },
+                    "createdAt": "2026-11-11T15:00:00Z",
+                    "expiresAt": "2026-11-11T17:00:00Z",
+                    "grant": null
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "410": {
+            "$ref": "#/components/responses/Gone"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/follow-up-requests/{requestId}": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "getPatientFollowupRequest",
+        "summary": "Consultar confirmação externa do paciente",
+        "security": [
+          {
+            "doctorSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          }
+        ],
+        "description": "Somente solicitação do médico da sessão. approved traz grant; pending/rejected não traz dados clínicos. Pode ser consultado a cada 15s e ao retornar à aba.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FollowupRequestEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "id": "request-demo-1",
+                    "invitationId": "invite-demo-1",
+                    "status": "pending",
+                    "requestedScopes": [
+                      "read_exams",
+                      "read_wearables",
+                      "read_graphrag_briefing"
+                    ],
+                    "requestedDuration": {
+                      "mode": "until",
+                      "expiresAt": "2026-12-11T15:00:00Z"
+                    },
+                    "createdAt": "2026-11-11T15:00:00Z",
+                    "expiresAt": "2026-11-11T17:00:00Z",
+                    "grant": null
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/patients/{patientId}/access": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "revalidatePatientAccess",
+        "summary": "Revalidar autorização e sinalizar dados novos",
+        "security": [
+          {
+            "doctorSession": []
+          },
+          {
+            "temporarySession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "temporaryAccessId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Contexto ligado a cookie temporário; não é credencial. Omitir para acompanhamento contínuo."
+          },
+          {
+            "name": "knownDataRevision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Revisão do snapshot exibido; backend calcula hasNewData."
+          },
+          {
+            "name": "knownAccessRevision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "snapshot.accessRevision conhecido. Se diferir da autorização atual, responder409 ACCESS_CHANGED sem conteúdo clínico; cliente descarta snapshot e reviewToken."
+          }
+        ],
+        "description": "Consultar a cada 15s enquanto visível e imediatamente no foco. Toda chamada clínica revalida novamente. Mudança de escopos retorna 409 ACCESS_CHANGED; revogado/expirado 403. Intervalo de polling é suposição operacional, não revogação instantânea garantida.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccessStatusEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "access": {
+                      "kind": "continuous",
+                      "contextId": "grant-demo-dan",
+                      "patientId": "usr-dan-2026",
+                      "grantId": "grant-demo-dan",
+                      "scopeVersion": "scope-demo-1",
+                      "scopes": [
+                        "read_clinical_context",
+                        "read_exams",
+                        "read_wearables",
+                        "read_alerts",
+                        "read_graphrag_briefing"
+                      ],
+                      "expiresAt": "2026-12-11T15:00:00Z",
+                      "readOnly": true
+                    },
+                    "accessRevision": "access-demo-1",
+                    "latestDataRevision": "rev-demo-1",
+                    "hasNewData": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/patients/{patientId}/snapshot": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "getPatientSnapshot",
+        "summary": "Obter conjunto clínico consistente e autorizado",
+        "security": [
+          {
+            "doctorSession": []
+          },
+          {
+            "temporarySession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "temporaryAccessId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Contexto ligado a cookie temporário; não é credencial. Omitir para acompanhamento contínuo."
+          }
+        ],
+        "description": "Primeiro recorte apropriado ao cenário de uso, com cobertura explícita e sem descarte silencioso. evidence, briefing, timeline e grafo pertencem à mesma revisão. Revogação/alteração de escopo vale também para snapshots já emitidos.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SnapshotEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "id": "snap-demo-1",
+                    "patientId": "usr-dan-2026",
+                    "createdAt": "2026-11-11T15:00:00Z",
+                    "dataRevision": "rev-demo-1",
+                    "accessRevision": "access-demo-1",
+                    "updateHighWatermark": "cursor-demo-high-1",
+                    "access": {
+                      "kind": "continuous",
+                      "contextId": "grant-demo-dan",
+                      "patientId": "usr-dan-2026",
+                      "grantId": "grant-demo-dan",
+                      "scopeVersion": "scope-demo-1",
+                      "scopes": [
+                        "read_clinical_context",
+                        "read_exams",
+                        "read_wearables",
+                        "read_alerts",
+                        "read_graphrag_briefing"
+                      ],
+                      "expiresAt": "2026-12-11T15:00:00Z",
+                      "readOnly": true
+                    },
+                    "patient": {
+                      "id": "usr-dan-2026",
+                      "displayName": "Daniel Vaz",
+                      "age": 32,
+                      "biologicalSex": "Masculino",
+                      "disambiguationLabel": "Paciente demonstrativo"
+                    },
+                    "coverage": {
+                      "from": "2025-10-18",
+                      "to": "2025-10-18",
+                      "truncated": false
+                    },
+                    "review": {
+                      "lastReviewedCursor": null,
+                      "lastReviewedAt": null,
+                      "mode": "initial_review",
+                      "unreadGroupCount": null
+                    },
+                    "sources": [
+                      {
+                        "id": "src-fleury",
+                        "label": "Fleury Medicina e Saúde",
+                        "kind": "laboratory",
+                        "state": "unknown",
+                        "lastSyncedAt": "2026-11-11T14:30:00Z",
+                        "lastEventDate": "2025-10-18",
+                        "coverage": {
+                          "from": "2025-10-18",
+                          "to": "2025-10-18",
+                          "truncated": false
+                        }
+                      }
+                    ],
+                    "evidence": [
+                      {
+                        "id": "ex-fer-2025",
+                        "version": "1",
+                        "kind": "lab_result",
+                        "label": "Ferritina Sérica",
+                        "occurredOn": "2025-10-18",
+                        "occurredAt": null,
+                        "ingestedAt": "2026-11-11T14:30:00Z",
+                        "sourceId": "src-fleury",
+                        "documentId": "doc-fleury-2025",
+                        "provenance": "extracted",
+                        "value": 22,
+                        "unit": "ng/mL",
+                        "referenceRange": {
+                          "min": 30,
+                          "max": 400,
+                          "text": null
+                        },
+                        "text": null,
+                        "status": "attention",
+                        "supersedes": null
+                      }
+                    ],
+                    "clinicalContext": {
+                      "state": "empty",
+                      "items": [],
+                      "reasonCode": null
+                    },
+                    "exams": {
+                      "state": "available",
+                      "items": [
+                        {
+                          "id": "ferritina",
+                          "label": "Ferritina Sérica",
+                          "canonicalUnit": "ng/mL",
+                          "measurementRefs": [
+                            {
+                              "id": "ex-fer-2025",
+                              "version": "1"
+                            }
+                          ]
+                        }
+                      ],
+                      "reasonCode": null
+                    },
+                    "wearables": {
+                      "state": "empty",
+                      "items": [],
+                      "reasonCode": null
+                    },
+                    "alerts": {
+                      "state": "empty",
+                      "items": [],
+                      "reasonCode": null
+                    },
+                    "briefing": {
+                      "state": "available",
+                      "items": [
+                        {
+                          "id": "finding-fer-demo",
+                          "title": "Ferritina abaixo da referência do laudo",
+                          "text": "Resultado de 22 ng/mL no exame de 18/10/2025; referência registrada: 30–400 ng/mL.",
+                          "basis": "recorded_fact",
+                          "evidenceRefs": [
+                            {
+                              "id": "ex-fer-2025",
+                              "version": "1"
+                            }
+                          ]
+                        }
+                      ],
+                      "reasonCode": null
+                    },
+                    "documents": {
+                      "state": "available",
+                      "items": [
+                        {
+                          "id": "doc-fleury-2025",
+                          "title": "Laudo Fleury — outubro/2025",
+                          "sourceId": "src-fleury",
+                          "occurredOn": "2025-10-18",
+                          "receivedAt": "2026-11-11T14:30:00Z",
+                          "mimeType": "application/pdf",
+                          "originalAvailable": false,
+                          "evidenceRefs": [
+                            {
+                              "id": "ex-fer-2025",
+                              "version": "1"
+                            }
+                          ]
+                        }
+                      ],
+                      "reasonCode": null
+                    },
+                    "timeline": [
+                      {
+                        "id": "event-fleury-2025",
+                        "groupId": "doc-fleury-2025",
+                        "kind": "document",
+                        "label": "Laudo laboratorial Fleury",
+                        "occurredOn": "2025-10-18",
+                        "occurredAt": null,
+                        "receivedAt": "2026-11-11T14:30:00Z",
+                        "evidenceRefs": [
+                          {
+                            "id": "ex-fer-2025",
+                            "version": "1"
+                          }
+                        ],
+                        "documentId": "doc-fleury-2025"
+                      }
+                    ],
+                    "graph": {
+                      "state": "available",
+                      "nodes": [
+                        {
+                          "id": "node-dan",
+                          "kind": "patient",
+                          "label": "Daniel Vaz",
+                          "evidenceRefs": []
+                        },
+                        {
+                          "id": "node-fer",
+                          "kind": "biomarker",
+                          "label": "Ferritina: 22 ng/mL",
+                          "evidenceRefs": [
+                            {
+                              "id": "ex-fer-2025",
+                              "version": "1"
+                            }
+                          ]
+                        }
+                      ],
+                      "edges": [
+                        {
+                          "id": "edge-dan-fer",
+                          "source": "node-dan",
+                          "target": "node-fer",
+                          "label": "Resultado laboratorial registrado",
+                          "basis": "recorded_fact",
+                          "evidenceRefs": [
+                            {
+                              "id": "ex-fer-2025",
+                              "version": "1"
+                            }
+                          ]
+                        }
+                      ],
+                      "reasonCode": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/patients/{patientId}/updates": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "getPatientUpdates",
+        "summary": "Novidades agrupadas presas ao snapshot",
+        "security": [
+          {
+            "doctorSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "snapshotId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Snapshot emitido para este médico/vínculo/escopo."
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Paginação opaca dentro do snapshot; omitido inicia desde o cursor de revisão do médico."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          }
+        ],
+        "description": "Não disponível a acesso temporário. throughCursor permanece estável em todas as páginas. reviewToken somente na última página, representa o conjunto inteiro servido. Alteração do escopo ou retenção de snapshot retorna409. Novidades posteriores ao highwater ficam para próxima revisão. Todo EvidenceRef de seus itens resolve no snapshot.evidence correspondente; não emitir referência a dado fora do conjunto acessível. Correções/remoções obedecem o fechamento de referências e escopos.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UpdatesPageEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "snapshotId": "snap-demo-1",
+                    "mode": "initial_review",
+                    "throughCursor": "cursor-demo-high-1",
+                    "items": [],
+                    "page": {
+                      "nextCursor": null,
+                      "hasMore": false
+                    },
+                    "reviewToken": "review-demo-snap-1-sem-validade"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/patients/{patientId}/reviews": {
+      "post": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "recordPatientReview",
+        "summary": "Concluir revisão do conjunto apresentado",
+        "security": [
+          {
+            "doctorSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Token da resposta GET /session."
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Chave aleatória por intenção; repetir mesma chave e body em retry.",
+              "minLength": 16,
+              "maxLength": 200
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewInput"
+              },
+              "example": {
+                "snapshotId": "snap-demo-1",
+                "reviewToken": "review-demo-snap-1-sem-validade"
+              }
+            }
+          }
+        },
+        "description": "Somente médico autenticado com vínculo ativo. Validar token do último lote, snapshot e scopeVersion; avançar monotonicamente. Requisição antiga que já foi coberta retorna already_recorded sem regredir cursor. Revisão não declara normalidade nem conduta clínica.",
+        "responses": {
+          "200": {
+            "description": "Resposta proposta; não implementada.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewResultEnvelope"
+                },
+                "example": {
+                  "meta": {
+                    "requestId": "req-demo-001",
+                    "serverTime": "2026-11-11T15:00:00Z",
+                    "contractVersion": "0.1-draft"
+                  },
+                  "data": {
+                    "status": "recorded",
+                    "lastReviewedCursor": "cursor-demo-high-1",
+                    "lastReviewedAt": "2026-11-11T15:01:00Z",
+                    "hasUpdatesAfterReview": true
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/patients/{patientId}/documents/{documentId}/content": {
+      "get": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "streamOriginalDocument",
+        "summary": "Transmitir original com autorização por requisição",
+        "security": [
+          {
+            "doctorSession": []
+          },
+          {
+            "temporarySession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "patientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "documentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "temporaryAccessId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "description": "Contexto ligado a cookie temporário; não é credencial. Omitir para acompanhamento contínuo."
+          }
+        ],
+        "description": "Stream pela mesma origem e cookies. Não retornar URL pública ou link assinado duradouro. Documento deve pertencer ao paciente e ser permitido no vínculo atual. PDF/imagem somente; sem original responde404 ORIGINAL_UNAVAILABLE. documentId é imutável por arquivo/versão; nunca retornar outro binário sob o ID citado no snapshot. Substituição binária exige novo documentId.",
+        "responses": {
+          "200": {
+            "description": "Original autorizado, quando disponível.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "no-store, private"
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "inline; filename=\"laudo.pdf\""
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "nosniff"
+              }
+            },
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/temporary-access/{temporaryAccessId}/close": {
+      "post": {
+        "tags": [
+          "Contrato temporário"
+        ],
+        "operationId": "closeTemporaryAccess",
+        "summary": "Encerrar explicitamente acesso pontual do navegador",
+        "security": [
+          {
+            "temporarySession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "temporaryAccessId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Identificador opaco; não é credencial.",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Token da resposta GET /session."
+            }
+          }
+        ],
+        "description": "Botão explícito Encerrar acesso. Invalida somente este contexto no servidor, de forma idempotente; não outros contextos da mesma sessão. Fechar aba limpa memória, mas unload não garante entrega; cookie compartilhado/restaurável não garante encerramento global. Token original pode ser resolvido novamente até o TTL, conforme política backend a ratificar.",
+        "responses": {
+          "204": {
+            "description": "Contexto temporário encerrado ou já encerrado."
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "doctorSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "doctor_session",
+        "description": "Cookie HttpOnly Secure SameSite=Lax criado e validado pelo backend; nome provisório."
+      },
+      "temporarySession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "consultation_session",
+        "description": "Cookie HttpOnly Secure ligado ao contexto temporário; não concede identidade médica ou carteira."
+      }
+    },
+    "schemas": {
+      "Scope": {
+        "type": "string",
+        "enum": [
+          "read_clinical_context",
+          "read_exams",
+          "read_wearables",
+          "read_alerts",
+          "read_graphrag_briefing"
+        ]
+      },
+      "Meta": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "requestId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "serverTime": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "contractVersion": {
+            "const": "0.1-draft"
+          }
+        },
+        "required": [
+          "requestId",
+          "serverTime",
+          "contractVersion"
+        ]
+      },
+      "Problem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri-reference"
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          },
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Mensagem sem token nem conteúdo clínico."
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "retryAfterSeconds": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status",
+          "code",
+          "detail",
+          "requestId",
+          "retryAfterSeconds"
+        ]
+      },
+      "Doctor": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "professionalIdentifier": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador profissional validado pelo backend; pode não estar disponível."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "professionalIdentifier"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "anonymous",
+              "authenticated"
+            ]
+          },
+          "doctor": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Doctor"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "csrfToken": {
+            "type": "string",
+            "description": "Usar em X-CSRF-Token, nunca registrar em logs."
+          },
+          "pendingInvitation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvitationHandoff"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "doctor",
+          "expiresAt",
+          "csrfToken",
+          "pendingInvitation"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "anonymous"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "doctor": {
+                  "type": "null"
+                },
+                "expiresAt": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "authenticated"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "doctor": {
+                  "$ref": "#/components/schemas/Doctor"
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Profile": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "age": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 130
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "biologicalSex": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Masculino",
+                  "Feminino",
+                  "Não informado"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "disambiguationLabel": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Somente rótulo mínimo autorizado, sem identificador completo."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "age",
+          "biologicalSex",
+          "disambiguationLabel"
+        ]
+      },
+      "Grant": {
+        "type": "object",
+        "description": "expiresAt null só em vínculo ativo expressamente autorizado sem data final; pending não contém dados clínicos.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "patientId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "expired",
+              "revoked",
+              "rejected"
+            ]
+          },
+          "scopeVersion": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            }
+          },
+          "approvedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "revokedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "durationExplicitlyApproved": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "status",
+          "scopeVersion",
+          "scopes",
+          "approvedAt",
+          "expiresAt",
+          "revokedAt",
+          "durationExplicitlyApproved"
+        ]
+      },
+      "AccessContext": {
+        "type": "object",
+        "description": "Temporary: expiresAt obrigatório não nulo e <= convite. Continuous: grantId não nulo. Identificadores não substituem cookies.",
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "continuous",
+              "temporary"
+            ]
+          },
+          "contextId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "patientId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "grantId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador opaco; não é credencial.",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "scopeVersion": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            }
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "readOnly": {
+            "const": true
+          }
+        },
+        "required": [
+          "kind",
+          "contextId",
+          "patientId",
+          "grantId",
+          "scopeVersion",
+          "scopes",
+          "expiresAt",
+          "readOnly"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "temporary"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "properties": {
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "grantId": {
+                  "type": "null"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "continuous"
+                }
+              },
+              "required": [
+                "kind"
+              ]
+            },
+            "then": {
+              "properties": {
+                "grantId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ReviewState": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lastReviewedCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador opaco; não é credencial.",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastReviewedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "initial_review",
+              "changes"
+            ]
+          },
+          "unreadGroupCount": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "lastReviewedCursor",
+          "lastReviewedAt",
+          "mode",
+          "unreadGroupCount"
+        ]
+      },
+      "PatientRow": {
+        "type": "object",
+        "description": "Para estados não ativos: patient, lastClinicalEventAt, lastReceivedAt, review e highlight = null.",
+        "additionalProperties": false,
+        "properties": {
+          "relationshipId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "accessStatus": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "expired",
+              "revoked",
+              "rejected"
+            ]
+          },
+          "patient": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Profile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastClinicalEventAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastReceivedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "highlight": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Somente contexto autorizado; não inventar escore."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastClinicalEventOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "relationshipId",
+          "accessStatus",
+          "patient",
+          "lastClinicalEventAt",
+          "lastReceivedAt",
+          "review",
+          "highlight",
+          "lastClinicalEventOn"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "accessStatus": {
+                  "enum": [
+                    "pending",
+                    "expired",
+                    "revoked",
+                    "rejected"
+                  ]
+                }
+              },
+              "required": [
+                "accessStatus"
+              ]
+            },
+            "then": {
+              "properties": {
+                "patient": {
+                  "type": "null"
+                },
+                "lastClinicalEventAt": {
+                  "type": "null"
+                },
+                "lastReceivedAt": {
+                  "type": "null"
+                },
+                "review": {
+                  "type": "null"
+                },
+                "highlight": {
+                  "type": "null"
+                },
+                "lastClinicalEventOn": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Page": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador opaco; não é credencial.",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "hasMore": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "nextCursor",
+          "hasMore"
+        ]
+      },
+      "PatientList": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PatientRow"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          }
+        },
+        "required": [
+          "items",
+          "page"
+        ]
+      },
+      "Invitation": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "consultation",
+              "followup"
+            ]
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "permittedScopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            }
+          },
+          "canRequestFollowup": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "expiresAt",
+          "permittedScopes",
+          "canRequestFollowup"
+        ]
+      },
+      "SharingResolution": {
+        "type": "object",
+        "description": "O backend associa convite e possível acesso temporário ao cookie. Convite followup pode retornar temporaryAccess null.",
+        "additionalProperties": false,
+        "properties": {
+          "invitation": {
+            "$ref": "#/components/schemas/Invitation"
+          },
+          "temporaryAccess": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccessContext"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requiresDoctorAuthentication": {
+            "type": "boolean"
+          },
+          "loginContextId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "description": "Identificador opaco, não é credencial."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "invitation",
+          "temporaryAccess",
+          "requiresDoctorAuthentication",
+          "loginContextId"
+        ]
+      },
+      "RequestDuration": {
+        "type": "object",
+        "description": "until exige expiresAt futuro; until_revoked exige null e escolha explícita do paciente. Nenhum padrão de duração nesta proposta.",
+        "additionalProperties": false,
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "until",
+              "until_revoked"
+            ]
+          },
+          "expiresAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "mode",
+          "expiresAt"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "mode": {
+                  "const": "until"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "mode": {
+                  "const": "until_revoked"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            },
+            "then": {
+              "properties": {
+                "expiresAt": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "FollowupRequestInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "invitationId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "requestedScopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+          },
+          "requestedDuration": {
+            "$ref": "#/components/schemas/RequestDuration"
+          }
+        },
+        "required": [
+          "invitationId",
+          "requestedScopes",
+          "requestedDuration"
+        ]
+      },
+      "FollowupRequest": {
+        "type": "object",
+        "description": "Médico vem da sessão. Aprovação realizada no mobile/backend, nunca por operação da web médica.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "invitationId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "expired",
+              "cancelled"
+            ]
+          },
+          "requestedScopes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Scope"
+            }
+          },
+          "requestedDuration": {
+            "$ref": "#/components/schemas/RequestDuration"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "grant": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Grant"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "invitationId",
+          "status",
+          "requestedScopes",
+          "requestedDuration",
+          "createdAt",
+          "expiresAt",
+          "grant"
+        ]
+      },
+      "AccessStatus": {
+        "type": "object",
+        "description": "Toda leitura revalida a autorização; isto não é um lease offline. ACCESS_CHANGED exige descartar snapshot anterior.",
+        "additionalProperties": false,
+        "properties": {
+          "access": {
+            "$ref": "#/components/schemas/AccessContext"
+          },
+          "accessRevision": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "latestDataRevision": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "hasNewData": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "access",
+          "accessRevision",
+          "latestDataRevision",
+          "hasNewData"
+        ]
+      },
+      "Coverage": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "to": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "from",
+          "to",
+          "truncated"
+        ]
+      },
+      "Source": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "label": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "laboratory",
+              "wearable",
+              "patient",
+              "clinical_record",
+              "other"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "current",
+              "stale",
+              "error",
+              "unknown"
+            ]
+          },
+          "lastSyncedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "lastEventDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "kind",
+          "state",
+          "lastSyncedAt",
+          "lastEventDate",
+          "coverage"
+        ]
+      },
+      "EvidenceRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "version": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "id",
+          "version"
+        ]
+      },
+      "ReferenceRange": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "min",
+          "max",
+          "text"
+        ]
+      },
+      "Evidence": {
+        "type": "object",
+        "description": "No mínimo uma data do evento quando conhecida; desconhecida deve permanecer null. Cada citação exige versão exata. Status é fornecido pelo backend.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "version": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "lab_result",
+              "wearable_reading",
+              "wearable_event",
+              "patient_report",
+              "medication",
+              "condition",
+              "family_history",
+              "document"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "occurredOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "ingestedAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "documentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador opaco; não é credencial.",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "provenance": {
+            "type": "string",
+            "enum": [
+              "extracted",
+              "patient_reported",
+              "provider_record",
+              "derived"
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "referenceRange": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReferenceRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "normal",
+              "attention",
+              "critical",
+              "unknown"
+            ]
+          },
+          "supersedes": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "version",
+          "kind",
+          "label",
+          "occurredOn",
+          "occurredAt",
+          "ingestedAt",
+          "sourceId",
+          "documentId",
+          "provenance",
+          "value",
+          "unit",
+          "referenceRange",
+          "text",
+          "status",
+          "supersedes"
+        ]
+      },
+      "ContextItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "condition",
+              "symptom",
+              "medication",
+              "family_history"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "startDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "endDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "startDate",
+          "endDate",
+          "evidenceRefs"
+        ]
+      },
+      "BiomarkerSeries": {
+        "type": "object",
+        "description": "Valores, unidades e referências de cada medição estão em evidence; frontend não converte unidades incompatíveis.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "label": {
+            "type": "string"
+          },
+          "canonicalUnit": {
+            "type": "string"
+          },
+          "measurementRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "canonicalUnit",
+          "measurementRefs"
+        ]
+      },
+      "WearableSeries": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "metric": {
+            "type": "string",
+            "enum": [
+              "resting_heart_rate",
+              "heart_rate",
+              "hrv",
+              "sleep_total",
+              "sleep_deep",
+              "sleep_rem",
+              "spo2",
+              "steps"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "aggregation": {
+            "type": "string",
+            "enum": [
+              "daily_summary",
+              "episode",
+              "raw"
+            ]
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "pointRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "metric",
+          "unit",
+          "aggregation",
+          "coverage",
+          "pointRefs"
+        ]
+      },
+      "Alert": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "attention",
+              "high",
+              "unknown"
+            ]
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "severity",
+          "evidenceRefs"
+        ]
+      },
+      "Finding": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "title": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "recorded_fact",
+              "temporal_association",
+              "suggested_hypothesis"
+            ]
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "text",
+          "basis",
+          "evidenceRefs"
+        ]
+      },
+      "Document": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identifica um arquivo/versão binária imutável. Substituir o binário cria outro documentId; correção de metadados não troca o stream sob o mesmo ID.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "title": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "occurredOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receivedAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "mimeType": {
+            "type": "string",
+            "enum": [
+              "application/pdf",
+              "image/jpeg",
+              "image/png"
+            ]
+          },
+          "originalAvailable": {
+            "type": "boolean"
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "sourceId",
+          "occurredOn",
+          "receivedAt",
+          "mimeType",
+          "originalAvailable",
+          "evidenceRefs"
+        ],
+        "description": "Documento original versionado por ID; stream retorna exatamente o arquivo citado no snapshot, sujeito à autorização atual."
+      },
+      "TimelineEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "groupId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "document",
+              "wearable_event",
+              "patient_report",
+              "medication",
+              "condition",
+              "correction"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "occurredOn": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Data civil do evento; não converter para UTC nem inventar horário.",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "occurredAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Instante ISO 8601 com fuso horário.",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "receivedAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          },
+          "documentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador opaco; não é credencial.",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "groupId",
+          "kind",
+          "label",
+          "occurredOn",
+          "occurredAt",
+          "receivedAt",
+          "evidenceRefs",
+          "documentId"
+        ]
+      },
+      "ContextSection": {
+        "type": "object",
+        "description": "items deve estar vazio se state não for available; empty significa autorizado sem dados, not_shared significa categoria não autorizada.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContextItem"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Código sem conteúdo restrito."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "items",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ExamsSection": {
+        "type": "object",
+        "description": "items deve estar vazio se state não for available; empty significa autorizado sem dados, not_shared significa categoria não autorizada.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BiomarkerSeries"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Código sem conteúdo restrito."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "items",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "WearablesSection": {
+        "type": "object",
+        "description": "items deve estar vazio se state não for available; empty significa autorizado sem dados, not_shared significa categoria não autorizada.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WearableSeries"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Código sem conteúdo restrito."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "items",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "AlertsSection": {
+        "type": "object",
+        "description": "items deve estar vazio se state não for available; empty significa autorizado sem dados, not_shared significa categoria não autorizada.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Alert"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Código sem conteúdo restrito."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "items",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "BriefingSection": {
+        "type": "object",
+        "description": "items deve estar vazio se state não for available; empty significa autorizado sem dados, not_shared significa categoria não autorizada.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Finding"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Código sem conteúdo restrito."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "items",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "DocumentsSection": {
+        "type": "object",
+        "description": "items deve estar vazio se state não for available; empty significa autorizado sem dados, not_shared significa categoria não autorizada.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Código sem conteúdo restrito."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "items",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "items": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "GraphNode": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "patient",
+              "condition",
+              "symptom",
+              "medication",
+              "biomarker",
+              "wearable_event",
+              "document"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "label",
+          "evidenceRefs"
+        ]
+      },
+      "GraphEdge": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "target": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "label": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "recorded_fact",
+              "temporal_association",
+              "suggested_hypothesis"
+            ]
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "target",
+          "label",
+          "basis",
+          "evidenceRefs"
+        ]
+      },
+      "GraphSection": {
+        "type": "object",
+        "description": "Sem posições, dimensões ou dados de layout. Estado não available exige arrays vazios.",
+        "additionalProperties": false,
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "available",
+              "empty",
+              "not_shared",
+              "unavailable"
+            ]
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraphNode"
+            }
+          },
+          "edges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GraphEdge"
+            }
+          },
+          "reasonCode": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "state",
+          "nodes",
+          "edges",
+          "reasonCode"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "enum": [
+                    "empty",
+                    "not_shared",
+                    "unavailable"
+                  ]
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "nodes": {
+                  "maxItems": 0
+                },
+                "edges": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "state": {
+                  "const": "available"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            },
+            "then": {
+              "properties": {
+                "nodes": {
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Snapshot": {
+        "type": "object",
+        "description": "Snapshot consistente e autorizado. evidence só contém origens autorizadas e referências resolvíveis. Briefing/grafo unavailable não derruba dados básicos. Snapshot inicial pode ter recorte: coverage.truncated obriga informar a lacuna; revisão cobre o feed de novidades, não declara leitura de todo o histórico. Todos os EvidenceRef do snapshot e de todas as páginas de updates desse snapshot devem resolver no registro evidence, inclusive evidências fora do recorte de curvas. Sources/documentos necessários também devem resolver. Se limites impedirem fechamento, responder422 SNAPSHOT_TOO_LARGE e não emitir conjunto inconsistente. Filtros v0 são locais sobre a cobertura devolvida; sem promessa de histórico fora dela.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "patientId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "dataRevision": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "accessRevision": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "updateHighWatermark": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "access": {
+            "$ref": "#/components/schemas/AccessContext"
+          },
+          "patient": {
+            "$ref": "#/components/schemas/Profile"
+          },
+          "coverage": {
+            "$ref": "#/components/schemas/Coverage"
+          },
+          "review": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviewState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Source"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "clinicalContext": {
+            "$ref": "#/components/schemas/ContextSection"
+          },
+          "exams": {
+            "$ref": "#/components/schemas/ExamsSection"
+          },
+          "wearables": {
+            "$ref": "#/components/schemas/WearablesSection"
+          },
+          "alerts": {
+            "$ref": "#/components/schemas/AlertsSection"
+          },
+          "briefing": {
+            "$ref": "#/components/schemas/BriefingSection"
+          },
+          "documents": {
+            "$ref": "#/components/schemas/DocumentsSection"
+          },
+          "timeline": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TimelineEvent"
+            }
+          },
+          "graph": {
+            "$ref": "#/components/schemas/GraphSection"
+          }
+        },
+        "required": [
+          "id",
+          "patientId",
+          "createdAt",
+          "dataRevision",
+          "accessRevision",
+          "updateHighWatermark",
+          "access",
+          "patient",
+          "coverage",
+          "review",
+          "sources",
+          "evidence",
+          "clinicalContext",
+          "exams",
+          "wearables",
+          "alerts",
+          "briefing",
+          "documents",
+          "timeline",
+          "graph"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "access": {
+                  "properties": {
+                    "kind": {
+                      "const": "temporary"
+                    }
+                  },
+                  "required": [
+                    "kind"
+                  ]
+                }
+              },
+              "required": [
+                "access"
+              ]
+            },
+            "then": {
+              "properties": {
+                "review": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "UpdateGroup": {
+        "type": "object",
+        "description": "Uma mudança por grupo; removed pode ter evidenceRefs vazio, sem ressuscitar conteúdo removido ou não autorizado.",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "document",
+              "wearable_event",
+              "patient_report",
+              "medication",
+              "condition"
+            ]
+          },
+          "change": {
+            "type": "string",
+            "enum": [
+              "added",
+              "corrected",
+              "removed"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "receivedAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "evidenceRefs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvidenceRef"
+            }
+          },
+          "documentId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Identificador opaco; não é credencial.",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "change",
+          "label",
+          "receivedAt",
+          "evidenceRefs",
+          "documentId"
+        ]
+      },
+      "UpdatesPage": {
+        "type": "object",
+        "description": "Primeira inclusão usa initial_review e não transforma todo histórico em notificações; pode emitir reviewToken sem itens.",
+        "additionalProperties": false,
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "initial_review",
+              "changes"
+            ]
+          },
+          "throughCursor": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateGroup"
+            }
+          },
+          "page": {
+            "$ref": "#/components/schemas/Page"
+          },
+          "reviewToken": {
+            "anyOf": [
+              {
+                "type": "string",
+                "description": "Prova opaca emitida apenas na última página e vinculada ao médico/grant/snapshot/escopos."
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "snapshotId",
+          "mode",
+          "throughCursor",
+          "items",
+          "page",
+          "reviewToken"
+        ],
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "page": {
+                  "properties": {
+                    "hasMore": {
+                      "const": true
+                    }
+                  },
+                  "required": [
+                    "hasMore"
+                  ]
+                }
+              },
+              "required": [
+                "page"
+              ]
+            },
+            "then": {
+              "properties": {
+                "reviewToken": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "ReviewInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "snapshotId": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "reviewToken": {
+            "type": "string",
+            "description": "Obtido na última página de updates para este snapshot."
+          }
+        },
+        "required": [
+          "snapshotId",
+          "reviewToken"
+        ]
+      },
+      "ReviewResult": {
+        "type": "object",
+        "description": "Backend garante avanço monotônico no mesmo fluxo; nunca compare cursores na web.",
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "recorded",
+              "already_recorded"
+            ]
+          },
+          "lastReviewedCursor": {
+            "type": "string",
+            "description": "Identificador opaco; não é credencial.",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "lastReviewedAt": {
+            "type": "string",
+            "description": "Instante ISO 8601 com fuso horário.",
+            "format": "date-time"
+          },
+          "hasUpdatesAfterReview": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "lastReviewedCursor",
+          "lastReviewedAt",
+          "hasUpdatesAfterReview"
+        ]
+      },
+      "SessionEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Session"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "PatientListEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PatientList"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "SharingResolutionEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SharingResolution"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "FollowupRequestEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/FollowupRequest"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "AccessStatusEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AccessStatus"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "SnapshotEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Snapshot"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "UpdatesPageEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/UpdatesPage"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "ReviewResultEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ReviewResult"
+          }
+        },
+        "required": [
+          "meta",
+          "data"
+        ]
+      },
+      "InvitationHandoff": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "loginContextId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Identificador opaco, não é credencial."
+          },
+          "invitation": {
+            "$ref": "#/components/schemas/Invitation"
+          }
+        },
+        "required": [
+          "loginContextId",
+          "invitation"
+        ],
+        "description": "Metadados do convite retomados pelo login, ligados ao cookie/backend. Não reconstitui contexto temporário clínico."
+      }
+    },
+    "responses": {
+      "ServiceUnavailable": {
+        "description": "Serviço indisponível",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Serviço indisponível",
+              "status": 503,
+              "code": "SERVICE_UNAVAILABLE",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Entrada inválida",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Entrada inválida",
+              "status": 422,
+              "code": "VALIDATION_ERROR",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Sessão médica necessária ou expirada",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Sessão médica necessária ou expirada",
+              "status": 401,
+              "code": "SESSION_REQUIRED",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Acesso negado, revogado ou expirado",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Acesso negado, revogado ou expirado",
+              "status": 403,
+              "code": "ACCESS_REVOKED",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Contexto, cursor, snapshot ou idempotência conflitante",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Contexto, cursor, snapshot ou idempotência conflitante",
+              "status": 409,
+              "code": "SNAPSHOT_STALE",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "Gone": {
+        "description": "Convite expirado ou inutilizável",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Convite expirado ou inutilizável",
+              "status": 410,
+              "code": "INVITE_EXPIRED",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Limite de requisições",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Limite de requisições",
+              "status": 429,
+              "code": "RATE_LIMITED",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Recurso inexistente ou fora do vínculo",
+        "content": {
+          "application/problem+json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            },
+            "example": {
+              "type": "about:blank",
+              "title": "Recurso inexistente ou fora do vínculo",
+              "status": 404,
+              "code": "NOT_FOUND",
+              "detail": "Mensagem orientada à recuperação, sem dados clínicos.",
+              "requestId": "req-demo-error",
+              "retryAfterSeconds": null
+            }
+          }
+        }
+      }
+    }
+  }
+}
