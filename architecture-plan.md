@@ -2,6 +2,23 @@
 
 Definição arquitetural incorporando o ecossistema multiplataforma (**React Native** no mobile do paciente, **React/Next.js** na web do médico) e a camada de interoperabilidade com **Model Context Protocol (MCP)** para agentes de IA externos.
 
+## Decisão de acesso institucional — 13/11/2026
+
+**Residência híbrida por origem, sem blockchain.** O cofre pessoal central recebe uploads do paciente e conserva seus registros autorizados. Instituições mantêm suas bases e originais; o hub consulta recortes permitidos na origem e usa conteúdo/derivados temporários, isolados por contexto. Centralizamos as políticas de acesso, o diretório mínimo autorizado, a proveniência e os registros de uso e cobrança, protegidos também como informação sensível quando vinculados ao paciente.
+
+Detalhamento do desenho para esta extensão:
+
+- [Residência e ciclo de vida](docs/institutional-data-residency.md): alternativas, decisão, retenção proposta, réplicas excepcionais e comportamento com fontes indisponíveis.
+- [Fluxo e interface de acesso](docs/institutional-access-flow.md): extração com evidência, paciente/profissional/instituições, entrega autorizada, episódio e reconhecimento idempotente da unidade de serviço.
+- [Pesquisa institucional](docs/institutional-research.md): achados documentais, atores, hipóteses de pagadores e restrições a validar.
+- [Glossário](GLOSSARY.md): consulta clínica, episódio de acesso institucional, pacote clínico e eventos de uso/cobrança são conceitos distintos.
+
+O teto inicial proposto para conteúdo institucional temporário é de **15 minutos**, limitado também pelo fim do episódio/contexto, pela autorização e pela validade informada pela fonte, sem renovação automática por refresh. Autorizações são revalidadas antes de entrega e confirmação; expirar o cache não cria outra unidade cobrável no mesmo episódio. Uma síntese só usa evidências permitidas, e indisponibilidade de fonte não é ausência de histórico.
+
+O MVP pode operar com uploads do paciente sem depender de adesão de instituições. Conectores na origem, autenticação institucional e cobrança são próximos trabalhos de backend, não funcionalidades existentes. A unidade de serviço recomendada é uma entrega elegível confirmada por episódio, sem taxa por requisição, repetição ou revisão da web. A API médica `0.1-draft` e seu OpenAPI não são alterados por este desenho.
+
+**Escopo dos diagramas anteriores abaixo:** o armazenamento central, GraphRAG e integrações MCP representam a proposta do cofre pessoal, ainda sujeita à implementação e às permissões aplicáveis. Não representam ingestão automática das bases de instituições, nem autorização irrestrita para agentes externos. Para residência institucional, os documentos desta seção prevalecem.
+
 ---
 
 ## 1. Visão Geral da Topologia do Sistema

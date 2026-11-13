@@ -6,6 +6,16 @@ Documentação da frente web do médico: [contexto do produto](PRODUCT.md), [exp
 
 A aplicação do médico está em [`web/`](web/README.md). Consulte instalação, modos real/demo e checks no README da web, e os resultados e pendências no [registro da implementação](docs/doctor-web-delivery.md).
 
+## Camada institucional — desenho de 13/11/2026
+
+A decisão de residência é **híbrida por origem**: documentos enviados pelo paciente e seus registros estruturados compõem o cofre pessoal central; bases institucionais permanecem na origem e fornecem apenas recortes autorizados, processados temporariamente pelo hub. Os dados institucionais não alimentam uma cópia permanente, grafo ou índice vetorial compartilhado por padrão. **Blockchain está excluída.**
+
+O [fluxo institucional](docs/institutional-access-flow.md) descreve fornecimento, extração, autorização, entrega e medição. A [decisão de residência](docs/institutional-data-residency.md) compara alternativas e define tratamento de cache, revogação e indisponibilidade. A [pesquisa institucional](docs/institutional-research.md), delegada ao `agy` com Gemini 3.8 Flash High, reúne fontes, atores, possíveis pagadores e hipóteses comerciais. Os termos estão no [glossário](GLOSSARY.md).
+
+O desenho recomenda uma unidade de serviço por **episódio de acesso institucional**, reconhecida após entrega completa e confirmação autenticada do pacote clínico contratado. Cliques, polling, retries, erros e leituras de uma mesma entrega não multiplicam a cobrança. Acesso por QR anônimo e o registro de revisão já existente na web não são eventos de cobrança institucional.
+
+Esta etapa entrega pesquisa e desenho, sem implementar backend, cobrança ou conectores de instituições. A disposição a pagar, o enquadramento jurídico, as regras comerciais e os contratos com fontes precisam de validação. O contrato médico `0.1-draft` permanece temporário, sem alteração de suas rotas ou promessa de integração real.
+
 ---
 
 ## O Problema
@@ -31,6 +41,8 @@ Nossa solução atua em duas frentes complementares: **engenharia de dados clín
 ## Arquitetura Técnica
 
 Para superar as limitações de um RAG tradicional (que perde relações de causa, efeito e temporalidade), projetamos uma arquitetura **Híbrida (Grafo de Conhecimento + Série Temporal + Busca Vetorial HNSW)**.
+
+O fluxo de persistência abaixo descreve o **cofre pessoal**, com documentos fornecidos pelo paciente e fontes cuja conservação foi autorizada para esse fim. O acesso institucional sob demanda segue o [desenho específico](docs/institutional-access-flow.md); consultá-lo não autoriza incorporar os resultados à persistência longitudinal.
 
 ```mermaid
 flowchart TD

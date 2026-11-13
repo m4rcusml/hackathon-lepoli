@@ -29,6 +29,9 @@ A web deve ajudar o médico a entender o contexto de cada paciente, investigar a
 ## Capabilities and Constraints
 
 - Escopo de Marcus: web do médico e contrato de integração. Backend e mobile têm outros responsáveis.
+- Em 13/11/2026, o escopo de desenho foi ampliado para a camada de inteligência e acesso entre instituições, com pesquisa delegada ao `agy` e desenho por subagentes. Isso não transfere automaticamente a implementação do backend/mobile nem ratifica o contrato temporário.
+- A residência institucional segue o [modelo híbrido por origem](docs/institutional-data-residency.md): cofre pessoal central para uploads; dados institucionais consultados na origem, com processamento temporário autorizado e sem réplica longitudinal por padrão. Blockchain está excluída.
+- O [fluxo institucional](docs/institutional-access-flow.md) recomenda cobrar o serviço de entrega confirmada de um pacote clínico elegível por episódio, sem cobrança por clique, retry ou revisão. Pagador e disposição a pagar são hipóteses da [pesquisa](docs/institutional-research.md); a extensão não está implementada.
 - Integração real mobile → backend → web, com cenário determinístico explicitamente identificado para contingência e desenvolvimento.
 - Histórico, briefing rastreável, séries temporais e grafo clínico são requisitos documentados.
 - O acesso clínico documentado é somente leitura. Anotações são um requisito secundário; prescrição e edição do prontuário não foram solicitadas.
